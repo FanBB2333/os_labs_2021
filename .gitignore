@@ -3,3 +3,4 @@ linux-5.14*
 *.pdf
 *.out
 .DS_Store
+*.o
