@@ -1,9 +1,6 @@
 
 all:
-	${GCC} ${CFLAG} -c print.o
-	
-
-
+	${GCC} print.c ${CFLAG} -c print.o
 
 clean:
 	$(shell rm *.o 2>/dev/null)
