@@ -6,7 +6,7 @@ _start:
     # ------------------
     # - your code here -
     # ------------------
-    jal x0, _start_kernel
+    jal x0, start_kernel
 
     .section .bss.stack
     .globl boot_stack
