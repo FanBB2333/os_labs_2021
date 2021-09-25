@@ -1,8 +1,8 @@
 
 all:
+	${GCC} ${CFLAG} -c print.o
+	
 
-print.o: print.c
-	${GCC} ${CFLAG} -c $<
 
 
 clean:
