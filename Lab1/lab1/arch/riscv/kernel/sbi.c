@@ -19,7 +19,7 @@ struct sbiret sbi_ecall(int ext, int fid, uint64 arg0,
 		"addi a1, x0, %[arg1]\n"
 		"addi a0, x0, %[arg0]\n"
 		"ecall\n"
-		
+
 		:[error] "=r" (error), [value] "=r" (value)
 		:[ext] "r" (ext), [fid] "r" (fid), 
 		[arg0] "r" (arg0), [arg1] "r" (arg1), [arg2] "r" (arg2), 
@@ -30,5 +30,7 @@ struct sbiret sbi_ecall(int ext, int fid, uint64 arg0,
 	struct sbiret _ret;
 	_ret.error = error;
 	_ret.value = value;
+
+	return _ret;
 
 }
