@@ -10,14 +10,14 @@ struct sbiret sbi_ecall(int ext, int fid, uint64 arg0,
     // unimplemented   
 	long error, value;
 	__asm__ volatile (
-		"addi a7, x0, %[ext]\n"
-		"addi a6, x0, %[fid]\n"
-		"addi a5, x0, %[arg5]\n"
-		"addi a4, x0, %[arg4]\n"
-		"addi a3, x0, %[arg3]\n"
-		"addi a2, x0, %[arg2]\n"
-		"addi a1, x0, %[arg1]\n"
-		"addi a0, x0, %[arg0]\n"
+		"add a7, x0, %[ext]\n"
+		"add a6, x0, %[fid]\n"
+		"add a5, x0, %[arg5]\n"
+		"add a4, x0, %[arg4]\n"
+		"add a3, x0, %[arg3]\n"
+		"add a2, x0, %[arg2]\n"
+		"add a1, x0, %[arg1]\n"
+		"add a0, x0, %[arg0]\n"
 		"ecall\n"
 
 		:[error] "=r" (error), [value] "=r" (value)
