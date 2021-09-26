@@ -4,3 +4,4 @@ linux-5.14*
 *.out
 .DS_Store
 *.o
+.vscode
