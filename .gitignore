@@ -5,3 +5,9 @@ linux-5.14*
 .DS_Store
 *.o
 .vscode
+
+
+Image
+System.map
+vmlinux
+
