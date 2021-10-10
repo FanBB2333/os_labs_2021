@@ -9,6 +9,7 @@ _start:
     # ------------------
 
         # set stvec = _traps
+
         la x10, _traps
         # add x10, x10, x10
         # add x10, x10, x10
@@ -22,6 +23,8 @@ _start:
         addi x10, x0, 32
         csrrs x0, sie, x10
         # 32 : 100000
+
+
 
     # ------------------
 
