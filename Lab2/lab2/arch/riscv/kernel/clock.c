@@ -6,7 +6,14 @@ unsigned long TIMECLOCK = 10000000;
 unsigned long get_cycles() {
     // 使用 rdtime 编写内联汇编，获取 time 寄存器中 (也就是mtime 寄存器 )的值并返回
     // # YOUR CODE HERE
-
+    unsigned long _time;
+    __asm__ volatile (
+        "rdtime %[time]\n"
+        :[time] "=r" (_time)
+        :
+        :
+    );
+    return _time;
 }
 
 void clock_set_next_event() {
@@ -15,4 +22,5 @@ void clock_set_next_event() {
 
     // 使用 sbi_ecall 来完成对下一次时钟中断的设置
     // # YOUR CODE HERE
+    sbi_ecall(0x0, 0x0, next, 0, 0, 0, 0, 0);
 } 
