@@ -1,5 +1,9 @@
 // trap.c 
 
+int dec2bit(unsigned long num, int index) {
+    return (num>>(index-1)) & 1;
+}
+
 void trap_handler(unsigned long scause, unsigned long sepc) {
     // 通过 `scause` 判断trap类型
     // 如果是interrupt 判断是否是timer interrupt
@@ -8,5 +12,9 @@ void trap_handler(unsigned long scause, unsigned long sepc) {
     // 其他interrupt / exception 可以直接忽略
 
     // # YOUR CODE HERE
-    
+    // scause 最高位1 代表是interrupt
+    int interrupt = dec2bit(scause, 64);
+    if(interrupt == 1){
+        
+    }
 }
