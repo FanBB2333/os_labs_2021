@@ -13,7 +13,10 @@ _start:
     # ------------------
 
         # set sie[STIE] = 1
-        csrrsi x0, sie, 32
+        # csrrsi x0, sie, 32
+        addi x10, x0, 32
+        csrrs x0, sie, x10
+
         # 32 : 100000
 
     # ------------------
