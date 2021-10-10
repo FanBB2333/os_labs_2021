@@ -22,5 +22,5 @@ void clock_set_next_event() {
 
     // 使用 sbi_ecall 来完成对下一次时钟中断的设置
     // # YOUR CODE HERE
-    sbi_ecall(0x0, 0x0, next, 0, 0, 0, 0, 0);
+    sbi_ecall(0x0, 0x0, next, 0, 0, 0, 0, 0); // TODO: check if right
 } 
