@@ -1,11 +1,29 @@
+
 .extern start_kernel
 
-    .section .text.init 
+    .section .text.init
     .globl _start
 _start:
+    # YOUR CODE HERE
+
     # ------------------
-    # - your code here -
+
+        # set stvec = _traps
+
     # ------------------
+
+        # set sie[STIE] = 1
+
+    # ------------------
+
+        # set first time interrupt
+
+    # ------------------
+
+        # set sstatus[SIE] = 1
+
+    # ------------------
+
     la  sp, boot_stack_top
     jal x0, start_kernel
 
