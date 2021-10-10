@@ -1,4 +1,7 @@
 // trap.c 
+#include "clock.h"
+#include "printk.h"
+
 int dec2bit(unsigned long num, int index) {
     return (num>>(index-1)) & 1;
 }
@@ -14,7 +17,7 @@ void trap_handler(unsigned long scause, unsigned long sepc) {
     // scause 最高位1 代表是interrupt
     int interrupt = dec2bit(scause, 64);
     if(interrupt == 1){
-        int exception_code = scause - (1<<63); 
+        unsigned long exception_code = scause - (1UL << 63); 
         if(exception_code == 5){
             printk("Supervisor Mode Timer Interrupt\n");
             clock_set_next_event();

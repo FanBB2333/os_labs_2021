@@ -9,6 +9,10 @@ _start:
     # ------------------
 
         # set stvec = _traps
+        la x10, _traps
+        add x10, x10, x10
+        add x10, x10, x10
+        csrrw x0, stvec, x10
 
     # ------------------
 
@@ -16,13 +20,12 @@ _start:
         # csrrsi x0, sie, 32
         addi x10, x0, 32
         csrrs x0, sie, x10
-
         # 32 : 100000
 
     # ------------------
 
         # set first time interrupt
-
+        call clock_set_next_event
     # ------------------
 
         # set sstatus[SIE] = 1
