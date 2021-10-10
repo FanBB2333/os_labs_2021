@@ -10,8 +10,9 @@ _start:
 
         # set stvec = _traps
         la x10, _traps
-        add x10, x10, x10
-        add x10, x10, x10
+        # add x10, x10, x10
+        # add x10, x10, x10
+        # csrrc x0, stvec, x0
         csrrw x0, stvec, x10
 
     # ------------------
