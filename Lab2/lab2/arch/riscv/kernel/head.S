@@ -3,26 +3,31 @@
 
     .section .text.init
     .globl _start
+    .align 4
 _start:
     # YOUR CODE HERE
+        la  sp, boot_stack_top
 
     # ------------------
 
         # set stvec = _traps
 
         la x10, _traps
-        # add x10, x10, x10
-        # add x10, x10, x10
-        # csrrc x0, stvec, x0
-        csrrw x0, stvec, x10
+        csrw stvec, x10
+        # csrrw x0, mtvec, x10
 
     # ------------------
 
         # set sie[STIE] = 1
         # csrrsi x0, sie, 32
-        addi x10, x0, 32
-        csrrs x0, sie, x10
+        # addi x10, x0, 32
+
+
+        li   x10, (1 << 5) | (1 << 1) | (1 << 9)
+        csrw sie, x10
         # 32 : 100000
+
+
 
 
 
@@ -33,11 +38,12 @@ _start:
     # ------------------
 
         # set sstatus[SIE] = 1
-        csrrsi x0, sstatus, 2
+        # csrrsi x0, sstatus, 2
+        li   x10, (1 << 8) | (1 << 5) | (1 << 1)
+        csrw sstatus, x10
 
     # ------------------
 
-    la  sp, boot_stack_top
     jal x0, start_kernel
 
     .section .bss.stack
