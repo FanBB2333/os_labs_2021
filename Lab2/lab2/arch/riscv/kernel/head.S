@@ -7,7 +7,8 @@
 _start:
     # YOUR CODE HERE
         la  sp, boot_stack_top
-
+        addi sp, sp, -8
+        sd x10, 0(sp)
     # ------------------
 
         # set stvec = _traps
@@ -30,18 +31,22 @@ _start:
 
 
 
-
+        ld x10, 0(sp)
+        addi sp, sp, 8
     # ------------------
 
         # set first time interrupt
         call clock_set_next_event
     # ------------------
-
+        addi sp, sp, -8
+        sd x10, 0(sp)
         # set sstatus[SIE] = 1
         # csrrsi x0, sstatus, 2
-        li   x10, (1 << 8) | (1 << 5) | (1 << 1)
+        li   x10,  (1 << 5) | (1 << 1)
         csrw sstatus, x10
 
+        ld x10, 0(sp)
+        addi sp, sp, 8
     # ------------------
 
     jal x0, start_kernel
