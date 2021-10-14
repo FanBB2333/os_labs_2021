@@ -50,6 +50,9 @@ _traps:
     # -----------
 
         # 2. call trap_handler
+    # need to pass the paras
+    csrr x10, scause
+    csrr x11, sepc
     call trap_handler
     # -----------
 
