@@ -1,5 +1,5 @@
     .section .text.entry
-    .align 2
+    .align 4
     .globl _traps 
 _traps:
     # YOUR CODE HERE
@@ -94,6 +94,6 @@ _traps:
     # -----------
 
         # 4. return from trap
-    mret
-    # sret
+    # mret
+    sret
     # -----------

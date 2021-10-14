@@ -3,7 +3,7 @@
 
     .section .text.init
     .globl _start
-    .align 4
+    # .align 4
 _start:
     # YOUR CODE HERE
         la  sp, boot_stack_top
@@ -23,6 +23,10 @@ _start:
         # csrrsi x0, sie, 32
         # addi x10, x0, 32
 
+
+
+        li   x10, (1 << 5) 
+        csrw sip, x10
 
         li   x10, (1 << 5) | (1 << 1) | (1 << 9)
         csrw sie, x10
