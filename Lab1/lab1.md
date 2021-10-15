@@ -119,12 +119,20 @@ void puts(char *s) {
 }
 ```
 
-`puti`函数用于打印出一个整型变量，在实现中我应用到了两个循环，第一个用于检测传入参数的位数，第二个用于按从左到右的顺序减去最高位并依次输出。
+`puti`函数用于打印出一个整型变量，在实现中我应用到了两个循环，第一个用于检测传入参数的位数，第二个用于按从左到右的顺序减去最高位并依次输出。当然，需要额外注意的是，负数需要单独判断并处理。
 
 ```c
+
 void puti(int x) {
+    // implemented
     unsigned long long cyc;
+
+    if(x < 0){
+        x = -x;
+        sbi_ecall(0x1, 0x0, 0x2D, 0, 0, 0, 0, 0);
+    }
     int _x = x;
+
     int length = 0;
     cyc = 1;
     while(cyc <= x){
@@ -138,14 +146,11 @@ void puti(int x) {
         _x = _x % cyc;
         cyc /= 10;
         sbi_ecall(0x1, 0x0, (current + 0x30), 0, 0, 0, 0, 0);
+
     }
+
 }
 ```
-
-
-
-
-
 
 
 ## 4.6 修改 defs
@@ -165,12 +170,11 @@ void puti(int x) {
 
 
 
-
 ## 思考题
 
 1. 请总结一下 RISC-V 的 calling convention，并解释 Caller / Callee Saved Register 有什么区别？
 
-查阅risc-v手册得到risc-v的不同寄存器都有其专门的用途
+查阅risc-v手册得到risc-v的不同寄存器都有其专门的用途，caller saved register表明在函数调用时由调用者将原本的值储存起来，于是在被调用内部函数看来，这些寄存器可以被直接使用。而callee saved register相反，是由被调用者将寄存器的值进行保存，保存后才可使用这些寄存器，因为一个寄存器的值不需要保护两次，RISC-V中约定了Caller / Callee Saved Register如下图所示。
 
 <img src="/Users/l1ght/Library/Application Support/typora-user-images/image-20210927120557846.png" alt="image-20210927120557846" style="zoom: 33%;" />
 
