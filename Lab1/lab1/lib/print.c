@@ -17,7 +17,7 @@ void puti(int x) {
     // implemented
     unsigned long long cyc;
 
-    if(x <= 0){
+    if(x < 0){
         x = -x;
         sbi_ecall(0x1, 0x0, 0x2D, 0, 0, 0, 0, 0);
 
