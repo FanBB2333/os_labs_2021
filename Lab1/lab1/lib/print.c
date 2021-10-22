@@ -16,7 +16,10 @@ void puts(char *s) {
 void puti(int x) {
     // implemented
     unsigned long long cyc;
-
+    if(x == -2147483648){
+        puts("-2147483648");
+        return;
+    }
     if(x < 0){
         x = -x;
         sbi_ecall(0x1, 0x0, 0x2D, 0, 0, 0, 0, 0);
