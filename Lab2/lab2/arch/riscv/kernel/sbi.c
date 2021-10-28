@@ -26,7 +26,7 @@ struct sbiret sbi_ecall(int ext, int fid, uint64 arg0,
 		:[ext] "r" (ext), [fid] "r" (fid), 
 		[arg0] "r" (arg0), [arg1] "r" (arg1), [arg2] "r" (arg2), 
 		[arg3] "r" (arg3), [arg4] "r" (arg4), [arg5] "r" (arg5)
-		:"memory"
+		:"memory","a0","a1","a2","a3","a4","a5"
 	);
 
 	struct sbiret _ret;
