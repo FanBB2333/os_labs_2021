@@ -23,6 +23,6 @@ void clock_set_next_event() {
 
     // 使用 sbi_ecall 来完成对下一次时钟中断的设置
     // # YOUR CODE HERE
-    printk("Ready to set next Interrupt after 1s\n");
+    printk("kernel is running!\n");
     sbi_ecall(0x0, 0x0, next, 0, 0, 0, 0, 0); // TODO: check if it is right
 } 
