@@ -6,10 +6,6 @@ _traps:
     # -----------
 
         # 1. save 32 registers and sepc to stack
-
-    # addi sp, sp, -8
-    # sd x2,  0(sp)
-
     addi sp, sp, -248
     addi sp, sp, -8
 
@@ -97,6 +93,5 @@ _traps:
     # -----------
 
         # 4. return from trap
-    # mret
     sret
     # -----------

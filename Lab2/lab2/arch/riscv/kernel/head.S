@@ -12,28 +12,14 @@ _start:
     # ------------------
 
         # set stvec = _traps
-
         la x10, _traps
         csrw stvec, x10
-        # csrrw x0, mtvec, x10
 
     # ------------------
 
         # set sie[STIE] = 1
-        # csrrsi x0, sie, 32
-        # addi x10, x0, 32
-
-
-
-        # li   x10, (1 << 5) 
-        # csrw sip, x10
-
         li   x10, (1 << 5)
         csrs sie, x10
-        # 32 : 100000
-
-
-
 
         ld x10, 0(sp)
         addi sp, sp, 8
@@ -45,7 +31,7 @@ _start:
         addi sp, sp, -8
         sd x10, 0(sp)
         # set sstatus[SIE] = 1
-        # csrrsi x0, sstatus, 2
+ 
         li   x10, (1 << 1)
         csrs sstatus, x10
 
