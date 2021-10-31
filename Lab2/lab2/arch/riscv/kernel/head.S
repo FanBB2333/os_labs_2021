@@ -29,7 +29,7 @@ _start:
         # csrw sip, x10
 
         li   x10, (1 << 5)
-        csrw sie, x10
+        csrs sie, x10
         # 32 : 100000
 
 
@@ -47,7 +47,7 @@ _start:
         # set sstatus[SIE] = 1
         # csrrsi x0, sstatus, 2
         li   x10, (1 << 1)
-        csrw sstatus, x10
+        csrs sstatus, x10
 
         ld x10, 0(sp)
         addi sp, sp, 8
