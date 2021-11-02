@@ -1,6 +1,8 @@
 //arch/riscv/kernel/proc.c
 
 extern void __dummy();
+extern void __switch_to(struct task_struct* prev, struct task_struct* next);
+
 
 struct task_struct* idle;           // idle process
 struct task_struct* current;        // 指向当前运行线程的 `task_struct`
@@ -58,3 +60,15 @@ void dummy() {
         }
     }
 }
+
+void switch_to(struct task_struct* next) {
+    /* YOUR CODE HERE */
+    if(current != next) {
+        __switch_to(current, next);
+        current = next;
+    }
+    else{
+        // do nothing
+    }
+}
+

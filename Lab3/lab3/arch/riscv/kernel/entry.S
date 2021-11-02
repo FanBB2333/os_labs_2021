@@ -4,8 +4,55 @@
     .global __dummy
 __dummy:
     # YOUR CODE HERE
+    la x10, dummy
+    csrrw x0, sepc, x10 # restore sepc
 
-    
+    sret
+
+    .global __switch_to
+__switch_to:
+    # x10: prev task_struct
+    # save state to prev process
+    # YOUR CODE HERE
+    sd ra, 40(x10)
+    sd sp, 48(x10)
+    sd s0, 56(x10)
+    sd s1, 64(x10)
+    sd s2, 72(x10)
+    sd s3, 80(x10)
+    sd s4, 88(x10)
+    sd s5, 96(x10)
+    sd s6, 104(x10)
+    sd s7, 112(x10)
+    sd s8, 120(x10)
+    sd s9, 128(x10)
+    sd s10, 136(x10)
+    sd s11, 144(x10)
+
+
+
+    # x11: next task_struct
+
+    # restore state from next process
+    # YOUR CODE HERE
+    ld ra, 40(x11)
+    ld sp, 48(x11)
+    ld s0, 56(x11)
+    ld s1, 64(x11)
+    ld s2, 72(x11)
+    ld s3, 80(x11)
+    ld s4, 88(x11)
+    ld s5, 96(x11)
+    ld s6, 104(x11)
+    ld s7, 112(x11)
+    ld s8, 120(x11)
+    ld s9, 128(x11)
+    ld s10, 136(x11)
+    ld s11, 144(x11)
+
+    ret
+
+
     .globl _traps 
 _traps:
     # YOUR CODE HERE
