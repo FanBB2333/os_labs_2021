@@ -91,6 +91,40 @@ void do_timer(void) {
         }
 
     }
+}
+
+
+// Implement SJF
+void schedule(void) {
+    /* YOUR CODE HERE */
+    int all_zeros = 1;
+    int min_time = task[1]->counter;
+    int min_index = 1;
+    for(int i = 1; i < NR_TASKS; i++){
+        if(task[i]->state == TASK_RUNNING){
+            if(all_zeros && task[i]->counter > 0){
+                all_zeros = 0;
+            }
+            if(task[i]->counter < min_time){
+                min_time = task[i]->counter;
+                min_index = i;
+            }
+
+        }
+    }
+    if(all_zeros){
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                task[i]->state = rand();
+            }
+        }
+        schedule();
+        return;
+    }
+    // schedule ith process
+    switch_to(task[min_index]);
+    
+
 
 }
 
