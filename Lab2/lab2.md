@@ -273,9 +273,7 @@ MEDELEG[15:0] == 16'b1011_0001_0000_1001
 
 MEDELEG[15] == MEDELEG[13] == MEDELEG[12] == MEDELEG[8] == MEDELEG[3] == MEDELEG[1] == 1'b1
 
-The meaning of `medeleg` is similar to the previous one, which means that the following  exceptions with the corresponding Exception code must be handled in S-Mode.
-
-
+`medeleg` 的含义与`mideleg`类似， 即表明下表中 Exception code为15、13、12、8、3、1的Exception被委托到S-Mode执行，而不能在原本的M-Mode处理。
 
 <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211031170321.png" style="zoom:50%;" />
 
