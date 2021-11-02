@@ -1,4 +1,7 @@
 //arch/riscv/kernel/proc.c
+#include "proc.h"
+#include "printk.h"
+#include "defs.h"
 
 extern void __dummy();
 extern void __switch_to(struct task_struct* prev, struct task_struct* next);
@@ -37,8 +40,8 @@ void task_init() {
         task[i]->counter = 0;
         task[i]->priority = rand();
         task[i]->pid = i; 
-        task[i].thread.ra = (uint64)__dummy;
-        task[i].thread.sp = (uint64)(&(task[i]) + PGSIZE);
+        task[i]->thread.ra = (uint64)__dummy;
+        task[i]->thread.sp = (uint64)(&(task[i]) + PGSIZE);
 
     }
 
