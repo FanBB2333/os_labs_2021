@@ -72,3 +72,25 @@ void switch_to(struct task_struct* next) {
     }
 }
 
+void do_timer(void) {
+    /* 1. 如果当前线程是 idle 线程 直接进行调度 */
+    /* 2. 如果当前线程不是 idle 对当前线程的运行剩余时间减 1 
+          若剩余时间任然大于0 则直接返回 否则进行调度 */
+
+    /* YOUR CODE HERE */
+    if(current == idle){
+        schedule();
+    }
+    else{
+        (current->counter)--;
+        if(current->counter > 0){
+            return;
+        }
+        else{
+            schedule();
+        }
+
+    }
+
+}
+
