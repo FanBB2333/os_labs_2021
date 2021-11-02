@@ -29,17 +29,17 @@ void task_init() {
     // 4. 其中 `ra` 设置为 __dummy （见 4.3.2）的地址， `sp` 设置为 该线程申请的物理页的高地址
 
     /* YOUR CODE HERE */
-
     for(int i = 1; i < NR_TASKS; i++){
         task[i] = kalloc();
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 0;
         task[i]->priority = rand();
         task[i]->pid = i; 
-        task[i].thread.ra = (uint64)
+        task[i].thread.ra = (uint64)__dummy;
         task[i].thread.sp = (uint64)(&(task[i]) + PGSIZE);
 
     }
+
 
     printk("...proc_init done!\n");
 }
