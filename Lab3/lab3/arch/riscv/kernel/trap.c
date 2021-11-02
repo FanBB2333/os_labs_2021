@@ -19,6 +19,7 @@ void trap_handler(unsigned long scause, unsigned long sepc) {
     if(interrupt == 1){
         unsigned long exception_code = scause - (1UL << 63); 
         if(exception_code == 5){
+            // printk("call do_timer\n");
             do_timer();
             clock_set_next_event();
         }

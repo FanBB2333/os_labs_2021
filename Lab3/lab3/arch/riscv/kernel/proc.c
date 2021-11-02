@@ -36,12 +36,14 @@ void task_init() {
 
     /* YOUR CODE HERE */
     for(int i = 1; i < NR_TASKS; i++){
-        task[i] = (struct task_struct *)kalloc();
+        task[i] = kalloc();
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 0;
         task[i]->priority = rand();
         task[i]->pid = i; 
-        task[i]->thread.ra = (uint64)__dummy;
+        task[i]->thread.ra = (uint64)&__dummy;
+        printk("i: %d, pri: %d, ra: %l64u\n", i, task[i]->priority, task[i]->thread.ra);
+
         task[i]->thread.sp = (uint64)(&(task[i]) + PGSIZE);
 
     }
@@ -67,9 +69,12 @@ void dummy() {
 
 void switch_to(struct task_struct* next) {
     /* YOUR CODE HERE */
-    if(current != next) {
-        __switch_to(current, next);
+    // printk("switch from %d to %d\n", current->pid, next->pid);
+    if(current->pid != next->pid) {
         current = next;
+        __switch_to(current, next);
+
+        
     }
     else{
         // do nothing
@@ -83,6 +88,7 @@ void do_timer(void) {
 
     /* YOUR CODE HERE */
     if(current == idle){
+        printk("current == idle\n");
         schedule();
     }
     else{
@@ -119,24 +125,26 @@ void schedule(void) {
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
-                task[i]->state = rand();
+                task[i]->counter = rand();
+                printk("i: %d, cnt: %d\n", i, task[i]->counter);
+
             }
         }
-        schedule();
-        // for(int i = 1; i < NR_TASKS; i++){
-        //     if(task[i]->state == TASK_RUNNING){
-        //         if(all_zeros && task[i]->counter > 0){
-        //             all_zeros = 0;
-        //         }
-        //         if(task[i]->counter < min_time){
-        //             min_time = task[i]->counter;
-        //             min_index = i;
-        //         }
+        // schedule();
+        min_time = task[1]->counter;
+        min_index = 1;
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                if(task[i]->counter < min_time){
+                    min_time = task[i]->counter;
+                    min_index = i;
+                }
 
-        //     }
-        // }
+            }
+        }
     }
     // schedule ith process
+    printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
     
 

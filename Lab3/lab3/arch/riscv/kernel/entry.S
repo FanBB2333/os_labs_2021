@@ -7,6 +7,7 @@ __dummy:
     la x10, dummy
     csrrw x0, sepc, x10 # restore sepc
 
+
     sret
 
     .global __switch_to
