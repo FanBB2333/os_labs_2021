@@ -1,5 +1,11 @@
     .section .text.entry
     .align 4
+
+    .global __dummy
+__dummy:
+    # YOUR CODE HERE
+
+    
     .globl _traps 
 _traps:
     # YOUR CODE HERE
