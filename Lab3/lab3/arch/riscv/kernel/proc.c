@@ -2,6 +2,7 @@
 #include "proc.h"
 #include "printk.h"
 #include "defs.h"
+#include "mm.h"
 
 extern void __dummy();
 extern void __switch_to(struct task_struct* prev, struct task_struct* next);
@@ -17,9 +18,11 @@ void task_init() {
     // 3. 由于 idle 不参与调度 可以将其 counter / priority 设置为 0
     // 4. 设置 idle 的 pid 为 0
     // 5. 将 current 和 task[0] 指向 idle
+    printk("called!\n");
 
     /* YOUR CODE HERE */
     idle = kalloc();
+    printk("proc_init half done!\n");
     idle->state = TASK_RUNNING;
     idle->counter = 0;
     idle->priority = 0;
@@ -35,7 +38,7 @@ void task_init() {
 
     /* YOUR CODE HERE */
     for(int i = 1; i < NR_TASKS; i++){
-        task[i] = kalloc();
+        task[i] = (struct task_struct *)kalloc();
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 0;
         task[i]->priority = rand();

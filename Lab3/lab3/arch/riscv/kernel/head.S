@@ -52,6 +52,7 @@ _start:
         ld x10, 0(sp)
         addi sp, sp, 8
     # ------------------
+    call task_init
 
     jal x0, start_kernel
 
