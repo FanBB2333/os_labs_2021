@@ -1,6 +1,7 @@
 // trap.c 
 #include "clock.h"
 #include "printk.h"
+#include "proc.h"
 
 int dec2bit(unsigned long num, int index) {
     return (num>>(index-1)) & 1;
@@ -20,8 +21,8 @@ void trap_handler(unsigned long scause, unsigned long sepc) {
         unsigned long exception_code = scause - (1UL << 63); 
         if(exception_code == 5){
             // printk("call do_timer\n");
-            do_timer();
             clock_set_next_event();
+            do_timer();
         }
     }
 }

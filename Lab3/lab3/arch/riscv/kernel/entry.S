@@ -6,11 +6,14 @@ __dummy:
     # YOUR CODE HERE
     la x10, dummy
     csrrw x0, sepc, x10 # restore sepc
-
+    # call clock_set_next_event
 
     sret
 
+    add x0, x0, x0
+
     .global __switch_to
+
 __switch_to:
     # x10: prev task_struct
     # save state to prev process

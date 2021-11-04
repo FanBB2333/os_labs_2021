@@ -20,7 +20,7 @@ void task_init() {
     // 4. 设置 idle 的 pid 为 0
     // 5. 将 current 和 task[0] 指向 idle
     /* YOUR CODE HERE */
-    idle = kalloc();
+    idle = (struct task_struct *)kalloc();
     idle->state = TASK_RUNNING;
     idle->counter = 0;
     idle->priority = 0;
@@ -36,7 +36,7 @@ void task_init() {
 
     /* YOUR CODE HERE */
     for(int i = 1; i < NR_TASKS; i++){
-        task[i] = kalloc();
+        task[i] = (struct task_struct *)kalloc();
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 0;
         task[i]->priority = rand();
@@ -44,7 +44,7 @@ void task_init() {
         task[i]->thread.ra = (uint64)&__dummy;
         printk("i: %d, pri: %d, ra: %l64u\n", i, task[i]->priority, task[i]->thread.ra);
 
-        task[i]->thread.sp = (uint64)(&(task[i]) + PGSIZE);
+        task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
 
     }
 
@@ -69,12 +69,10 @@ void dummy() {
 
 void switch_to(struct task_struct* next) {
     /* YOUR CODE HERE */
-    // printk("switch from %d to %d\n", current->pid, next->pid);
+    printk("switch from %d to %d\n", current->pid, next->pid);
     if(current->pid != next->pid) {
-        current = next;
         __switch_to(current, next);
-
-        
+        current = next;
     }
     else{
         // do nothing
@@ -87,7 +85,7 @@ void do_timer(void) {
           若剩余时间任然大于0 则直接返回 否则进行调度 */
 
     /* YOUR CODE HERE */
-    if(current == idle){
+    if(current->pid == idle->pid){
         printk("current == idle\n");
         schedule();
     }
@@ -110,6 +108,7 @@ void schedule(void) {
     int all_zeros = 1;
     int min_time = task[1]->counter;
     int min_index = 1;
+    printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
