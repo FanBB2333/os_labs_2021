@@ -58,6 +58,7 @@ void dummy() {
     uint64 MOD = 1000000007;
     uint64 auto_inc_local_var = 0;
     int last_counter = -1;
+    printk("dummy start!\n");
     while(1) {
         if (last_counter == -1 || current->counter != last_counter) {
             last_counter = current->counter;
@@ -69,10 +70,11 @@ void dummy() {
 
 void switch_to(struct task_struct* next) {
     /* YOUR CODE HERE */
-    printk("switch from %d to %d\n", current->pid, next->pid);
+    printk("switch from %d to %d, \n", current->pid, next->pid);
     if(current->pid != next->pid) {
-        __switch_to(current, next);
+        struct task_struct * _tmp = current;
         current = next;
+        __switch_to(_tmp, next);
     }
     else{
         // do nothing
@@ -101,26 +103,38 @@ void do_timer(void) {
     }
 }
 
+int find_min_time(){
+    int _min_time = -1;
+    int _min_id = -1;
+    for(int i = 0; i < NR_TASKS && task[i]->counter > 0; i++){
+        if(task[i]->counter < _min_time){
+            _min_time = task[i]->counter;
+            _min_id = i;
+        }
+    }
+    return _min_id;
+}
 
 // Implement SJF
 void schedule(void) {
     /* YOUR CODE HERE */
     int all_zeros = 1;
-    int min_time = task[1]->counter;
-    int min_index = 1;
+    int min_index = find_min_time();
+    int min_time = task[min_index]->counter;
     printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
                 all_zeros = 0;
             }
-            if(task[i]->counter < min_time){
+            if(task[i]->counter < min_time && task[i]->counter > 0){
                 min_time = task[i]->counter;
                 min_index = i;
             }
 
         }
     }
+    printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
@@ -130,8 +144,8 @@ void schedule(void) {
             }
         }
         // schedule();
-        min_time = task[1]->counter;
-        min_index = 1;
+        min_index = find_min_time();
+        min_time = task[min_index]->counter;
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
                 if(task[i]->counter < min_time){
