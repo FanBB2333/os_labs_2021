@@ -116,6 +116,7 @@ int find_min_time(){
 }
 
 // Implement SJF
+#ifdef SJF
 void schedule(void) {
     /* YOUR CODE HERE */
     int all_zeros = 1;
@@ -160,7 +161,57 @@ void schedule(void) {
     printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
     
+}
+#endif
 
+#ifdef DPRIORITY
+void schedule(void){
+    /* YOUR CODE HERE */
+    int all_zeros = 1;
+    int max_index = -1;
+    int max_priority = 0;
+    printk("schedule\n");
+    for(int i = 1; i < NR_TASKS; i++){
+        // printk("i: %d, pri: %d\n", i, task[i]->priority);
+        if(task[i]->state == TASK_RUNNING){
+            if(all_zeros && task[i]->counter > 0){
+                all_zeros = 0;
+            }
+            if(task[i]->priority > max_priority && task[i]->counter > 0){
+                max_priority = task[i]->priority;
+                max_index = i;
+            }
 
+        }
+    }
+    printk("all_zeros: %d, max_priority: %d, max_index: %d\n", all_zeros, max_priority, max_index);
+    if(all_zeros){
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                task[i]->counter = rand();
+                printk("i: %d, cnt: %d\n", i, task[i]->counter);
+
+            }
+        }
+        // schedule();
+        max_index = -1;
+        max_priority = 0;
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING && task[i]->counter > 0){
+                printk("pri: %d, max_pri: %d, %d\n",task[i]->priority, max_priority, max_priority < (int)task[i]->priority );
+                if(task[i]->priority > max_priority){
+                    // printk("i: %d, pri: %d\n", i, task[i]->priority);
+                    max_priority = task[i]->priority;
+                    max_index = i;
+                }
+
+            }
+        }
+    }
+    // schedule ith process
+    printk("switch_to %d\n", max_index);
+    switch_to(task[max_index]);
+    
 }
 
+#endif
