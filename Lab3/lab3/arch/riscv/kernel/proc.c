@@ -116,7 +116,7 @@ int find_min_time(){
 }
 
 // Implement SJF
-#ifdef DSJF
+#ifdef SJF
 void schedule(void) {
     /* YOUR CODE HERE */
     int all_zeros = 1;
@@ -164,7 +164,7 @@ void schedule(void) {
 }
 #endif
 
-#ifdef DPRIORITY
+#ifdef PRIORITY
 void schedule(void){
     /* YOUR CODE HERE */
     int all_zeros = 1;
