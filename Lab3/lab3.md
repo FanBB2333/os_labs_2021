@@ -165,6 +165,31 @@ __switch_to:
 ```
 
 ### 4.3.4 实现调度入口函数
+`do_timer`函数用于进程的计时器，它会在每次时钟中断时被调用，每次调用时将能够运行的程序剩余时间减一，如果当前线程是idle线程（如最初情况）则直接进行调度，否则需要将当前线程的运行剩余时间减1，如果剩余时间为0，则进行调度，否则表明程序还在运行。调度即为调用`schedule()`函数。
+
+```c
+void do_timer(void) {
+    /* 1. 如果当前线程是 idle 线程 直接进行调度 */
+    /* 2. 如果当前线程不是 idle 对当前线程的运行剩余时间减 1 
+          若剩余时间仍然大于0 则直接返回 否则进行调度 */
+
+    /* YOUR CODE HERE */
+    if(current->pid == idle->pid){
+        printk("current == idle\n");
+        schedule();
+    }
+    else{
+        (current->counter)--;
+        if(current->counter > 0){
+            return;
+        }
+        else{
+            schedule();
+        }
+
+    }
+}
+```
 
 ### 4.3.5 实现线程调度
 
