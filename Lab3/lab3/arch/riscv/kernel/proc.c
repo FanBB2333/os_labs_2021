@@ -70,7 +70,7 @@ void dummy() {
 
 void switch_to(struct task_struct* next) {
     /* YOUR CODE HERE */
-    printk("switch from %d to %d, \n", current->pid, next->pid);
+    printk("switch from [PID = %d COUNTER = %d] to [PID = %d COUNTER = %d]\n", current->pid, current->counter, next->pid, next->counter);
     if(current->pid != next->pid) {
         struct task_struct * _tmp = current;
         current = next;
@@ -140,7 +140,7 @@ void schedule(void) {
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
                 task[i]->counter = rand();
-                printk("i: %d, cnt: %d\n", i, task[i]->counter);
+                printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
 
             }
         }
@@ -189,7 +189,7 @@ void schedule(void){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
                 task[i]->counter = rand();
-                printk("i: %d, cnt: %d\n", i, task[i]->counter);
+                printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
 
             }
         }
