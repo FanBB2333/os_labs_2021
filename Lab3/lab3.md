@@ -195,6 +195,63 @@ void do_timer(void) {
 
 #### 4.3.5.1 短作业优先调度算法
 
+在SJF(短作业优先调度算法)中，我们需要找到运行时间最短的线程，并将其设置为current线程。其中该线程需要满足应当处于`TASK_RUNNING`状态的条件，遍历得到最短运行时间的进程后，若发现所有进程的剩余时间均为0，也即一轮程序已经运行完毕，此时我们重新对所有线程的剩余时间赋值并重新调度，以开启下一轮调度。
+在找到需要被调度的目标程序后，我们只需通过调用`switch_to()`函数以切换到目标进程。
+```c
+
+// Implement SJF
+#ifdef SJF
+void schedule(void) {
+    /* YOUR CODE HERE */
+    int all_zeros = 1;
+    int min_index = find_min_time();
+    int min_time = task[min_index]->counter;
+    for(int i = 1; i < NR_TASKS; i++){
+        if(task[i]->state == TASK_RUNNING){
+            if(all_zeros && task[i]->counter > 0){
+                all_zeros = 0;
+            }
+            if(task[i]->counter < min_time && task[i]->counter > 0){
+                min_time = task[i]->counter;
+                min_index = i;
+            }
+
+        }
+    }
+    if(all_zeros){
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                task[i]->counter = rand();
+                printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
+
+            }
+        }
+        // schedule();
+        min_index = find_min_time();
+        min_time = task[min_index]->counter;
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                if(task[i]->counter < min_time){
+                    min_time = task[i]->counter;
+                    min_index = i;
+                }
+
+            }
+        }
+    }
+    // schedule ith process
+    printk("switch_to %d\n", min_index);
+    switch_to(task[min_index]);
+    
+}
+#endif
+```
+
 #### 4.3.5.2 优先级调度算法
 
 ## 4.4 编译及测试
+
+## 思考题
+1.在 RV64 中一共用 32 个通用寄存器， 为什么 context_switch 中只保存了14个 ？
+
+2.当线程第一次调用时， 其 ra 所代表的返回点是 __dummy。 那么在之后的线程调用中 context_switch 中，ra 保存/恢复的函数返回点是什么呢 ？ 请同学用gdb尝试追踪一次完整的线程切换流程， 并关注每一次 ra 的变换。
