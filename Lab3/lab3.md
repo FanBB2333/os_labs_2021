@@ -253,10 +253,73 @@ void schedule(void) {
 
 ## 思考题
 1.在 RV64 中一共用 32 个通用寄存器， 为什么 context_switch 中只保存了14个 ？
-ra, sp寄存器存储了程序的返回地址和栈帧地址，而s0到s11寄存器是Saved Registers, 其他的寄存器都是用来存储程序的参数和局部变量的。这些寄存器除了ra以外，在RISC-V都被约定为是Callee-saved，也就是说只有这些寄存器是保存了线程内部的局部变量，其余的Caller-saved寄存器都已经被上层的父进程保存过。而由于我们需要知道从context_switch中返回另一个进程的地址，因此我们需要将ra寄存器的值保存下来。
+ra, sp寄存器存储了程序的返回地址和栈帧地址，而s0到s11寄存器是Saved Registers, 其他的寄存器都是用来存储程序的参数和局部变量的。这些寄存器除了ra以外，在RISC-V都被约定为是Callee-saved，这些寄存器在线程中通常会被编译器优先调用，例如存储线程内部所用到的变量的值，也就是说在context_switch过后需要优先将该线程独占有的变量存储情况恢复。这一点我们可以通过`objdump`来反汇编得到，如下为`dummy()`函数的反汇编结果，不难发现编译器在函数内部先将Saved Registers保存下来，此后的局部变量都是利用Saved Registers来保存：
+
+```assembly
+000000008020050c <dummy>:
+    8020050c:	fc010113          	addi	sp,sp,-64
+    80200510:	01513423          	sd	s5,8(sp)
+    80200514:	3b9adab7          	lui	s5,0x3b9ad
+    80200518:	02813823          	sd	s0,48(sp)
+    8020051c:	02913423          	sd	s1,40(sp)
+    80200520:	03213023          	sd	s2,32(sp)
+    80200524:	01313c23          	sd	s3,24(sp)
+    80200528:	01413823          	sd	s4,16(sp)
+    8020052c:	02113c23          	sd	ra,56(sp)
+    80200530:	fff00413          	li	s0,-1
+    80200534:	00000493          	li	s1,0
+    80200538:	00006917          	auipc	s2,0x6
+    8020053c:	a9890913          	addi	s2,s2,-1384 # 80205fd0 <current>
+    80200540:	fff00a13          	li	s4,-1
+    80200544:	a07a8a93          	addi	s5,s5,-1529 # 3b9aca07 <_skernel-0x448535f9>
+    80200548:	00002997          	auipc	s3,0x2
+    8020054c:	b2098993          	addi	s3,s3,-1248 # 80202068 <_srodata+0x68>
+    80200550:	00148793          	addi	a5,s1,1
+    80200554:	00098513          	mv	a0,s3
+    80200558:	01440863          	beq	s0,s4,80200568 <dummy+0x5c>
+    8020055c:	00093703          	ld	a4,0(s2)
+    80200560:	01073703          	ld	a4,16(a4) # fffffffffffff010 <t+0xffffffff7fdf902c>
+    80200564:	fe8706e3          	beq	a4,s0,80200550 <dummy+0x44>
+    80200568:	0357f4b3          	remu	s1,a5,s5
+    8020056c:	00093783          	ld	a5,0(s2)
+    80200570:	0207b583          	ld	a1,32(a5)
+    80200574:	0107a403          	lw	s0,16(a5)
+    80200578:	00048613          	mv	a2,s1
+    8020057c:	6f0000ef          	jal	ra,80200c6c <printk>
+    80200580:	00148793          	addi	a5,s1,1
+    80200584:	00098513          	mv	a0,s3
+    80200588:	fd441ae3          	bne	s0,s4,8020055c <dummy+0x50>
+    8020058c:	fddff06f          	j	80200568 <dummy+0x5c>
+
+```
+
+其余的Caller-saved寄存器都已经被上层的父进程保存过。而由于我们需要知道从context_switch中返回另一个进程的地址，因此我们同样也需要将ra寄存器的值保存下来。所以一共需要保存14个寄存器的值。
 
 
 
 2.当线程第一次调用时， 其 ra 所代表的返回点是 __dummy。 那么在之后的线程调用中 context_switch 中，ra 保存/恢复的函数返回点是什么呢 ？ 请同学用gdb尝试追踪一次完整的线程切换流程， 并关注每一次 ra 的变换。
 
 在之后的函数调用中，`ra`寄存器已经保存了真实的上下文环境，也即函数的返回地址，由于之前进程在`dummy()`函数的死循环中无限循环，返回之后应当重新回到`dummy()`函数中的`while(1)`处。
+
+线程切换流程：
+我们以`SJF`算法中，4个线程时，第一次由PID=4的线程切换到PID=3的线程的过程为例，计时程序在中断时触发，进入do_timer程序，继而根据情况判断是否需要执行调度，调度后则需要重新选择下一个运行的程序，并执行context_switch。由于是PID=3的线程的第一次调用，因此会返回到`__dummy`的地址
+下面是gdb中用到的指令（已忽略单步执行和继续运行）
+```gdb
+target remote :1234
+layout asm
+b dummy
+b __dummy
+b switch_to
+b __switch_to
+```
+此时程序还在执行PID=4的线程中的dummy循环，等待着下一次时钟中断的触发
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120101900.png)
+
+此时刚刚经历了schedule线程调度，发现需要切换到PID=3的线程，通过调用switch_to来进入__switch_to，以保存上文并重新载入新线程的下文，此时我们能够发现ra寄存器的值对应的并不是需要进入的__dummy地址，而是在`entry.S`的_traps中，
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102338.png)
+我们回头看，发现是由于在_trap中执行了call trap_handler，以将ra寄存器赋值成了`entry.S`中call trap_handler之后的地址，不过这并不会影响我们的线程切换，因为我们将马上在__switch_to中将正确的返回地址load入ra寄存器
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102847.png)
+下图已从PID=4的线程PCB中load出正确的上下文环境，此时再查看ra寄存器的值，已经是我们想要的__dummy了
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103500.png)
+再继续执行后会到达__dummy，继而通过sret回到dummy中继续循环并等待下一次时钟中断，回到dummy之后线程切换已经完成
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103623.png)
