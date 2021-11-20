@@ -58,7 +58,7 @@ void dummy() {
     uint64 MOD = 1000000007;
     uint64 auto_inc_local_var = 0;
     int last_counter = -1;
-    printk("dummy start!\n");
+    // printk("dummy start!\n");
     while(1) {
         if (last_counter == -1 || current->counter != last_counter) {
             last_counter = current->counter;
