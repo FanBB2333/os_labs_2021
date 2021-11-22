@@ -299,7 +299,7 @@ ra, sp寄存器存储了程序的返回地址和栈帧地址，而s0到s11寄存
 
 2.当线程第一次调用时， 其 ra 所代表的返回点是 __dummy。 那么在之后的线程调用中 context_switch 中，ra 保存/恢复的函数返回点是什么呢 ？ 请同学用gdb尝试追踪一次完整的线程切换流程， 并关注每一次 ra 的变换。
 
-在之后的函数调用中，`ra`寄存器已经保存了真实的上下文环境，也即函数的返回地址，由于之前进程在`dummy()`函数的死循环中无限循环，返回之后应当重新回到`dummy()`函数中的`while(1)`处。
+在之后的函数调用中，`ra`寄存器理应保存了真实的上下文环境，也即函数的返回地址，由于之前进程在`dummy()`函数的死循环中无限循环，返回之后应当重新回到`dummy()`函数中的`while(1)`处。
 
 线程切换流程：
 我们以`SJF`算法中，4个线程时，第一次由PID=4的线程切换到PID=3的线程的过程为例，计时程序在中断时触发，进入do_timer程序，继而根据情况判断是否需要执行调度，调度后则需要重新选择下一个运行的程序，并执行context_switch。由于是PID=3的线程的第一次调用，因此会返回到`__dummy`的地址
@@ -312,14 +312,22 @@ b __dummy
 b switch_to
 b __switch_to
 ```
-此时程序还在执行PID=4的线程中的dummy循环，等待着下一次时钟中断的触发
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120101900.png)
+此时程序还在执行PID=4的线程中的`dummy`循环，等待着下一次时钟中断的触发
 
-此时刚刚经历了schedule线程调度，发现需要切换到PID=3的线程，通过调用switch_to来进入__switch_to，以保存上文并重新载入新线程的下文，此时我们能够发现ra寄存器的值对应的并不是需要进入的__dummy地址，而是在`entry.S`的_traps中，
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102338.png)
-我们回头看，发现是由于在_trap中执行了call trap_handler，以将ra寄存器赋值成了`entry.S`中call trap_handler之后的地址，不过这并不会影响我们的线程切换，因为我们将马上在__switch_to中将正确的返回地址load入ra寄存器
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102847.png)
-下图已从PID=4的线程PCB中load出正确的上下文环境，此时再查看ra寄存器的值，已经是我们想要的__dummy了
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103500.png)
-再继续执行后会到达__dummy，继而通过sret回到dummy中继续循环并等待下一次时钟中断，回到dummy之后线程切换已经完成
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103623.png)
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120101900.png" style="zoom: 18%;" />
+
+此时刚刚经历了`schedule`线程调度，发现需要切换到PID=3的线程，通过调用`switch_to`来进入`__switch_to`，以保存上文并重新载入新线程的下文，此时我们能够发现ra寄存器的值对应的并不是需要进入的`__dummy`地址，而是在`entry.S`的`_traps`中
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102338.png" style="zoom:18%;" />
+
+我们回头看，发现是由于在`_trap`中执行了`call trap_handler`，以将ra寄存器赋值成了`entry.S`中`call trap_handler`之后的地址，不过这并不会影响我们的线程切换，因为我们将马上在`__switch_to`中将正确的返回地址load入ra寄存器
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120102847.png" style="zoom:33%;" />
+
+下图已从PID=4的线程PCB中load出正确的上下文环境，此时再查看ra寄存器的值，已经是我们想要的`__dummy`了
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103500.png" style="zoom: 18%;" />
+
+再继续执行后会到达`__dummy`，继而通过`sret`回到`dummy`中继续循环并等待下一次时钟中断，回到`dummy`之后线程切换已经完成，后续将会再次返回
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211120103623.png" style="zoom:33%;" />
