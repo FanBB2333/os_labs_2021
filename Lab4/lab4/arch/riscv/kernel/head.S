@@ -72,11 +72,24 @@ relocate:
     #   YOUR CODE HERE   #
     ######################
 
-    # set satp with early_pgtbl
+    # TODO: test whether there exists a negative mark before PA2VA_OFFSET
+    add ra, ra, PA2VA_OFFSET
+    add sp, sp, PA2VA_OFFSET
 
+    # set satp with early_pgtbl
+    #  63      60 59                  44 43                                0
+    #  ---------------------------------------------------------------------
+    # |   MODE   |         ASID         |                PPN                |
+    #  ---------------------------------------------------------------------
     ###################### 
     #   YOUR CODE HERE   #
     ######################
+    add x10, x0, x0
+    // mode field: 8, PPN field: 0x80000000 >> 12
+    li  x10, (8 << 60) | (0x80000000 >> 12)
+
+
+
 
     # flush tlb
     sfence.vma zero, zero

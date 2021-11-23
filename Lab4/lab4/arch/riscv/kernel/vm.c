@@ -12,4 +12,7 @@ void setup_vm(void) {
         低 30 bit 作为 页内偏移 这里注意到 30 = 9 + 9 + 12， 即我们只使用根页表， 根页表的每个 entry 都对应 1GB 的区域。 
     3. Page Table Entry 的权限 V | R | W | X 位设置为 1
     */
+    unsigned long va;
+
+    
 }
