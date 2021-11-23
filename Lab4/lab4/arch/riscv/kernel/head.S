@@ -5,6 +5,8 @@
     .globl _start
     # .align 4
 _start:
+        call setup_vm
+        call relocate
     # YOUR CODE HERE
         la  sp, boot_stack_top
         addi sp, sp, -8
@@ -59,6 +61,32 @@ _start:
 
     .section .bss.stack
     .globl boot_stack
+
+
+
+relocate:
+    # set ra = ra + PA2VA_OFFSET
+    # set sp = sp + PA2VA_OFFSET (If you have set the sp before)
+
+    ###################### 
+    #   YOUR CODE HERE   #
+    ######################
+
+    # set satp with early_pgtbl
+
+    ###################### 
+    #   YOUR CODE HERE   #
+    ######################
+
+    # flush tlb
+    sfence.vma zero, zero
+
+    ret
+
+    .section .bss.stack
+    .globl boot_stack
+
+
 boot_stack:
     .space  4096 # <-- change to your stack size
     # assign 4KB stack
