@@ -63,7 +63,7 @@ _start:
     .globl boot_stack
 
 
-
+    .global relocate
 relocate:
     # set ra = ra + PA2VA_OFFSET
     # set sp = sp + PA2VA_OFFSET (If you have set the sp before)
@@ -73,8 +73,8 @@ relocate:
     ######################
 
     # TODO: test whether there exists a negative mark before PA2VA_OFFSET
-    add ra, ra, PA2VA_OFFSET
-    add sp, sp, PA2VA_OFFSET
+    add ra, ra, a0
+    add sp, sp, a0
 
     # set satp with early_pgtbl
     #  63      60 59                  44 43                                0
