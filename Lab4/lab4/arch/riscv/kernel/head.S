@@ -85,8 +85,13 @@ relocate:
     #   YOUR CODE HERE   #
     ######################
     add t0, x0, x0
+    add t1, x0, x0
     // mode field: 8, PPN field: 0x80000000 >> 12
     li  t0, (8 << 60) | (0x80000000 >> 12)
+    la  t1, early_pgtbl
+    or  t0, t0, t1
+    csrrw x0, satp, t0
+
 
 
 
