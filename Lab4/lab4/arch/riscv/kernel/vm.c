@@ -32,7 +32,7 @@ void setup_vm(void) {
     3. Page Table Entry 的权限 V | R | W | X 位设置为 1
     */
     unsigned long pte;
-    pte = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (getppn(0x80000000, 2) << 30);
+    pte = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (getppn(0x80000000, 2) << 28);
     early_pgtbl[getvpn(0x80000000, 2)] = pte; // PA == VA
     early_pgtbl[getvpn(0xffffffe000000000, 2)] = pte; // PA + PV2VA_OFFSET == VA
     relocate((long)PA2VA_OFFSET);
@@ -79,4 +79,6 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     创建多级页表的时候可以使用 kalloc() 来获取一页作为页表目录
     可以使用 V bit 来判断页表项是否存在
     */
+   
+
 }
