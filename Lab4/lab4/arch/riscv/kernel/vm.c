@@ -46,6 +46,7 @@ unsigned long  swapper_pg_dir[512] __attribute__((__aligned__(0x1000)));
 
 void setup_vm_final(void) {
     memset(swapper_pg_dir, 0x0, PGSIZE);
+    // initialize to all mem 0x0
 
     // No OpenSBI mapping required
 
@@ -67,6 +68,9 @@ void setup_vm_final(void) {
     return;
 }
 
+int page_exist(uint64 pte){
+    return (pte & 0x1);
+}
 
 /* 创建多级页表映射关系 */
 void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
@@ -79,6 +83,12 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     创建多级页表的时候可以使用 kalloc() 来获取一页作为页表目录
     可以使用 V bit 来判断页表项是否存在
     */
-   
+    // layer 2
+
+    // if 1st entry doesn't exist, create a new one
+    if( !page_exist(pgtbl[getvpn(va, 2)]) ){
+        pgtbl[getvpn(va, 2)] = ((kalloc() >> 12) << 10) | (uint64)perm;
+    }
+    
 
 }
