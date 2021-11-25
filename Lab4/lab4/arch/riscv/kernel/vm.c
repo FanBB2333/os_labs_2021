@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "mm.h"
 #include "string.h"
+#include "printk.h"
 
 // arch/riscv/kernel/vm.c
 
@@ -83,12 +84,45 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     创建多级页表的时候可以使用 kalloc() 来获取一页作为页表目录
     可以使用 V bit 来判断页表项是否存在
     */
-    // layer 2
+    // 2   | (PUD) | 1   | 0   | OFFSET
+    // PGD | (PUD) | PMD | PTE | OFFSET
+    //第一层是页面目录(PDG)，第二层是中间目录(PMD)，页表(PTE)
+    // PTE: 页表项（page table entry）
+    // PGD(Page Global Directory)
+    // PUD(Page Upper Directory)
+    // PMD(Page Middle Directory)
+    // PT(Page Table)
 
+    uint64 *pgd = pgtbl;
+    uint64 *pmd = NULL;
+    uint64 *pte = NULL;
+
+
+    // layer 2
     // if 1st entry doesn't exist, create a new one
     if( !page_exist(pgtbl[getvpn(va, 2)]) ){
-        pgtbl[getvpn(va, 2)] = ((kalloc() >> 12) << 10) | (uint64)perm;
+        pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
+        pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | (uint64)perm;
+    }
+    else{
+        pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
     }
     
+    // layer 1
+    if( !page_exist(pmd[getvpn(va, 1)]) ){
+        pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
+        pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | (uint64)perm;
+    }
+    else{
+        pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
+    }
 
+    // layer 0
+    if( !page_exist(pte[getvpn(va, 0)]) ){
+        pte[getvpn(va, 0)] = (((uint64)pa >> 12) << 10) | (uint64)perm;
+    }
+    else{
+        printk("EXISTING PAGE!!!\n");
+    }
+    
 }
