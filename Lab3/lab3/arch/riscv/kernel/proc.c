@@ -88,7 +88,6 @@ void do_timer(void) {
 
     /* YOUR CODE HERE */
     if(current->pid == idle->pid){
-        printk("current == idle\n");
         schedule();
     }
     else{
