@@ -310,32 +310,51 @@ void schedule(void){
 #endif
 ```
 
+
+<div STYLE="page-break-after: always;"></div>
+
 ## 4.4 编译及测试
+
 ### 4.4.1 SJF算法结果
 - 4个task时
 第一次循环与运行：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090144.png)
-第一轮结束后，重新对counter赋值并运行，进入第二轮：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090431.png)
+
+- <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090144.png" style="zoom: 18%;" />
+
+- 第一轮结束后，重新对counter赋值并运行，进入第二轮：
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090431.png" style="zoom:18%;" />
 
 - 32个task时
-初始化counter：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090744.png)
-正常线程切换时截图：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090800.png)
+  初始化counter：
 
+  <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090744.png" style="zoom:20%;" />
+
+  正常线程切换时截图：
+
+  <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090800.png" style="zoom:18%;" />
+
+  
+<div STYLE="page-break-after: always;"></div>
 
 ### 4.4.2 PRIORITY算法结果
 - 4个task时
-根据优先级，下图中蓝线上半部分为第一轮运行结果，下半部分为第二轮的结果，可以发现由于参考了Linux v0.11的调度实现，我们的输出是正常的
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125092401.png)
+  根据优先级，下图中蓝线上半部分为第一轮运行结果，下半部分为第二轮的结果，可以发现由于参考了Linux v0.11的调度实现，我们的输出是正常的
+
+  <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125092401.png" style="zoom:18%;" />
+
+  
 
 - 32个task时
-初始化counter：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093007.png)
+  初始化counter：
 
-正常的线程切换：
-![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093037.png)
+  <img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093007.png" style="zoom:18%;" />
+
+  正常的线程切换：
+
+<img src="https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093037.png" style="zoom:18%;" />
+
+
 
 
 ## 思考题
