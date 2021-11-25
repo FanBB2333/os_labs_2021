@@ -199,6 +199,22 @@ void do_timer(void) {
 在找到需要被调度的目标程序后，我们只需通过调用`switch_to()`函数以切换到目标进程。
 ```c
 
+int find_min_time(){
+    int _min_time = -1;
+    int _min_id = -1;
+    for(int i = NR_TASKS-1; i >= 1 ; i--){
+        // if the time is not positive, we just pass it by
+        if(task[i]->counter <= 0){
+            continue;
+        }
+        if(task[i]->counter < _min_time){
+            _min_time = task[i]->counter;
+            _min_id = i;
+        }
+    }
+    return _min_id;
+}
+
 // Implement SJF
 #ifdef SJF
 void schedule(void) {
@@ -240,16 +256,87 @@ void schedule(void) {
         }
     }
     // schedule ith process
-    printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
-    
 }
 #endif
 ```
 
 #### 4.3.5.2 优先级调度算法
+在这里需要注意的是，优先级赋值的时候需要参考Linux V0.11中的代码实现，否则会产生错误的结果。
+```c
+#ifdef PRIORITY
+void schedule(void){
+    /* YOUR CODE HERE */
+    int all_zeros = 1;
+    int max_index = -1;
+    int max_priority = 0;
+    for(int i = NR_TASKS - 1; i >= 1; i--){
+        if(task[i]->state == TASK_RUNNING){
+            if(all_zeros && task[i]->counter > 0){
+                all_zeros = 0;
+            }
+            if(task[i]->priority > max_priority && task[i]->counter > 0){
+                max_priority = task[i]->priority;
+                max_index = i;
+            }
+
+        }
+    }
+    if(all_zeros){
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING){
+                task[i]->counter = (task[i]->counter >> 1) + task[i]->priority;
+                printk("SET [PID = %d PRIORITY = %d COUNTER = %d]\n", task[i]->pid, task[i]->priority, task[i]->counter);
+
+            }
+            
+        }
+        // schedule();
+        max_index = -1;
+        max_priority = 0;
+        for(int i = 1; i < NR_TASKS; i++){
+            if(task[i]->state == TASK_RUNNING && task[i]->counter > 0){
+                if(task[i]->priority > max_priority){
+                    max_priority = task[i]->priority;
+                    max_index = i;
+                }
+
+            }
+        }
+    }
+    // schedule ith process
+    switch_to(task[max_index]);
+}
+#endif
+```
 
 ## 4.4 编译及测试
+### 4.4.1 SJF算法结果
+- 4个task时
+第一次循环与运行：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090144.png)
+第一轮结束后，重新对counter赋值并运行，进入第二轮：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090431.png)
+
+- 32个task时
+初始化counter：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090744.png)
+正常线程切换时截图：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125090800.png)
+
+
+### 4.4.2 PRIORITY算法结果
+- 4个task时
+根据优先级，下图中蓝线上半部分为第一轮运行结果，下半部分为第二轮的结果，可以发现由于参考了Linux v0.11的调度实现，我们的输出是正常的
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125092401.png)
+
+- 32个task时
+初始化counter：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093007.png)
+
+正常的线程切换：
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211125093037.png)
+
 
 ## 思考题
 1.在 RV64 中一共用 32 个通用寄存器， 为什么 context_switch 中只保存了14个 ？

@@ -106,7 +106,11 @@ void do_timer(void) {
 int find_min_time(){
     int _min_time = -1;
     int _min_id = -1;
-    for(int i = 0; i < NR_TASKS && task[i]->counter > 0; i++){
+    for(int i = NR_TASKS-1; i >= 1 ; i--){
+        // if the time is not positive, we just pass it by
+        if(task[i]->counter <= 0){
+            continue;
+        }
         if(task[i]->counter < _min_time){
             _min_time = task[i]->counter;
             _min_id = i;
@@ -122,7 +126,7 @@ void schedule(void) {
     int all_zeros = 1;
     int min_index = find_min_time();
     int min_time = task[min_index]->counter;
-    printk("schedule\n");
+    // printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
@@ -135,7 +139,7 @@ void schedule(void) {
 
         }
     }
-    printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
+    // printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
@@ -158,7 +162,7 @@ void schedule(void) {
         }
     }
     // schedule ith process
-    printk("switch_to %d\n", min_index);
+    // printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
     
 }
@@ -170,8 +174,8 @@ void schedule(void){
     int all_zeros = 1;
     int max_index = -1;
     int max_priority = 0;
-    printk("schedule\n");
-    for(int i = 1; i < NR_TASKS; i++){
+    // printk("schedule\n");
+    for(int i = NR_TASKS - 1; i >= 1; i--){
         // printk("i: %d, pri: %d\n", i, task[i]->priority);
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
@@ -184,21 +188,23 @@ void schedule(void){
 
         }
     }
-    printk("all_zeros: %d, max_priority: %d, max_index: %d\n", all_zeros, max_priority, max_index);
+    // printk("all_zeros: %d, max_priority: %d, max_index: %d\n", all_zeros, max_priority, max_index);
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
-                task[i]->counter = rand();
-                printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
+                task[i]->counter = (task[i]->counter >> 1) + task[i]->priority;
+                // task[i]->counter = rand();
+                printk("SET [PID = %d PRIORITY = %d COUNTER = %d]\n", task[i]->pid, task[i]->priority, task[i]->counter);
 
             }
+            
         }
         // schedule();
         max_index = -1;
         max_priority = 0;
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING && task[i]->counter > 0){
-                printk("pri: %d, max_pri: %d, %d\n",task[i]->priority, max_priority, max_priority < (int)task[i]->priority );
+                // printk("pri: %d, max_pri: %d, %d\n",task[i]->priority, max_priority, max_priority < (int)task[i]->priority );
                 if(task[i]->priority > max_priority){
                     // printk("i: %d, pri: %d\n", i, task[i]->priority);
                     max_priority = task[i]->priority;
@@ -209,7 +215,7 @@ void schedule(void){
         }
     }
     // schedule ith process
-    printk("switch_to %d\n", max_index);
+    // printk("switch_to %d\n", max_index);
     switch_to(task[max_index]);
     
 }
