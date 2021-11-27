@@ -50,19 +50,30 @@ void setup_vm_final(void) {
     // initialize to all mem 0x0
 
     // No OpenSBI mapping required
+    int perm = 0;
 
     // mapping kernel text X|-|R|V
+    perm = (1 << 0) | (1 << 1) | (1 << 3);
     // create_mapping(swapper_pg_dir, (uint64)&_text, (uint64)&_text, (uint64)&_end - (uint64)&_text, 11);
 
     // mapping kernel rodata -|-|R|V
+    perm = (1 << 0) | (1 << 1);
     // create_mapping(swapper_pg_dir, (uint64)&_rodata, (uint64)&_rodata, (uint64)&_erodata - (uint64)&_rodata, 3);
 
     // mapping other memory -|W|R|V
+    perm = (1 << 0) | (1 << 1) | (1 << 2);
     // create_mapping(swapper_pg_dir
 
     // set satp with swapper_pg_dir
 
     // YOUR CODE HERE
+    uint64 _satp = (8 << 60) | ((uint64)swapper_pg_dir >> 12);
+    __asm__ volatile (
+        "csrrw x0, satp, %[_satp]\n"
+        :
+        :[_satp] "r" (_satp)
+        :"memory"
+	);
 
     // flush TLB
     asm volatile("sfence.vma zero, zero");
