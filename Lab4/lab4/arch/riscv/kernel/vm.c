@@ -45,6 +45,20 @@ void setup_vm(void) {
 /* swapper_pg_dir: kernel pagetable 根目录， 在 setup_vm_final 进行映射。 */
 unsigned long  swapper_pg_dir[512] __attribute__((__aligned__(0x1000)));
 
+extern char _stext[];
+extern char _etext[];
+
+extern char _srodata[];
+extern char _erodata[];
+
+extern char _sdata[];
+extern char _edata[];
+
+extern char _sbss[];
+extern char _ebss[];
+
+extern char _ekernel[];
+
 void setup_vm_final(void) {
     memset(swapper_pg_dir, 0x0, PGSIZE);
     // initialize to all mem 0x0
