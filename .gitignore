@@ -11,3 +11,4 @@ Image
 System.map
 vmlinux
 
+Lab4/lab4/arch/riscv/kernel/vmlinux.lds
