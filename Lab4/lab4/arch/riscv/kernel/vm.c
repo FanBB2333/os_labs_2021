@@ -52,17 +52,17 @@ void setup_vm_final(void) {
     // No OpenSBI mapping required
 
     // mapping kernel text X|-|R|V
-    create_mapping(...);
+    // create_mapping(swapper_pg_dir, (uint64)&_text, (uint64)&_text, (uint64)&_end - (uint64)&_text, 11);
 
     // mapping kernel rodata -|-|R|V
-    create_mapping(...);
+    // create_mapping(swapper_pg_dir, (uint64)&_rodata, (uint64)&_rodata, (uint64)&_erodata - (uint64)&_rodata, 3);
 
     // mapping other memory -|W|R|V
-    create_mapping(...);
+    // create_mapping(swapper_pg_dir
 
     // set satp with swapper_pg_dir
 
-    YOUR CODE HERE
+    // YOUR CODE HERE
 
     // flush TLB
     asm volatile("sfence.vma zero, zero");
@@ -94,36 +94,44 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     // PT(Page Table)
 
     // TODO : implement sz
+    int page_num = sz / PGSIZE;
+    
     uint64 *pgd = pgtbl;
     uint64 *pmd = NULL;
     uint64 *pte = NULL;
 
+    for(int i = 0; i < page_num; i++){
 
-    // layer 2
-    // if 1st entry doesn't exist, create a new one
-    if( !page_exist(pgtbl[getvpn(va, 2)]) ){
-        pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
-        pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | (uint64)perm;
+        // layer 2
+        // if 1st entry doesn't exist, create a new one
+        if( !page_exist(pgtbl[getvpn(va, 2)]) ){
+            pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
+            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | (uint64)perm;
+        }
+        else{
+            pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
+        }
+        
+        // layer 1
+        if( !page_exist(pmd[getvpn(va, 1)]) ){
+            pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
+            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | (uint64)perm;
+        }
+        else{
+            pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
+        }
+
+        // layer 0
+        if( !page_exist(pte[getvpn(va, 0)]) ){
+            pte[getvpn(va, 0)] = (((uint64)pa >> 12) << 10) | (uint64)perm;
+        }
+        else{
+            printk("EXISTING PAGE!!!\n");
+        }
+        pa = pa + 1 * PGSIZE;
+        va = va + 1 * PGSIZE;
     }
-    else{
-        pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
-    }
+
     
-    // layer 1
-    if( !page_exist(pmd[getvpn(va, 1)]) ){
-        pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
-        pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | (uint64)perm;
-    }
-    else{
-        pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
-    }
-
-    // layer 0
-    if( !page_exist(pte[getvpn(va, 0)]) ){
-        pte[getvpn(va, 0)] = (((uint64)pa >> 12) << 10) | (uint64)perm;
-    }
-    else{
-        printk("EXISTING PAGE!!!\n");
-    }
     
 }
