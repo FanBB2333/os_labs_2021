@@ -6,7 +6,7 @@
     # .align 4
 _start:
         call setup_vm
-        # call relocate
+        call relocate
     # YOUR CODE HERE
         la  sp, boot_stack_top
         addi sp, sp, -8
@@ -73,6 +73,7 @@ relocate:
     ######################
 
     # TODO: test whether there exists a negative mark before PA2VA_OFFSET
+    li  a0, 0xffffffff00000000 - 0xffffffe000000000
     add ra, ra, a0
     add sp, sp, a0
 
@@ -107,9 +108,9 @@ relocate:
     ret
 
     .section .bss.stack
+
+
     .globl boot_stack
-
-
 boot_stack:
     .space  4096 # <-- change to your stack size
     # assign 4KB stack

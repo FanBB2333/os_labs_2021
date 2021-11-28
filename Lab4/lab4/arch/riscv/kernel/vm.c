@@ -36,7 +36,7 @@ void setup_vm(void) {
     pte = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (getppn(0x80000000, 2) << 28);
     early_pgtbl[getvpn(0x80000000, 2)] = pte; // PA == VA
     early_pgtbl[getvpn(0xffffffe000000000, 2)] = pte; // PA + PV2VA_OFFSET == VA
-    relocate((long)PA2VA_OFFSET);
+    // relocate((long)PA2VA_OFFSET);
     
 }
 
