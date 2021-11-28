@@ -6,7 +6,7 @@
     # .align 4
 _start:
         call setup_vm
-        call relocate
+        # call relocate
     # YOUR CODE HERE
         la  sp, boot_stack_top
         addi sp, sp, -8
