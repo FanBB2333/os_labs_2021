@@ -9,6 +9,9 @@ _start:
         
         call setup_vm
         call relocate
+
+        call setup_vm_final
+        call mm_init
     # YOUR CODE HERE
         addi sp, sp, -8
         sd x10, 0(sp)
@@ -55,7 +58,7 @@ _start:
         ld x10, 0(sp)
         addi sp, sp, 8
     # ------------------
-    call mm_init
+
     call task_init
 
     jal x0, start_kernel
