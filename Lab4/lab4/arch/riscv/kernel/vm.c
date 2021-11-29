@@ -97,7 +97,7 @@ void setup_vm_final(void) {
     // set satp with swapper_pg_dir
 
     // YOUR CODE HERE
-    uint64 _satp = (8 << 60) | ((uint64)swapper_pg_dir >> 12);
+    uint64 _satp = (8 << 60) | (VA2PA((uint64)&swapper_pg_dir) >> 12);
     __asm__ volatile (
         "csrrw x0, satp, %[_satp]\n"
         :
