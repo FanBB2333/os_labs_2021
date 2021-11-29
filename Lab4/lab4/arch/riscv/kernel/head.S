@@ -10,8 +10,9 @@ _start:
         call setup_vm
         call relocate
 
-        call setup_vm_final
+
         call mm_init
+        call setup_vm_final
     # YOUR CODE HERE
         addi sp, sp, -8
         sd x10, 0(sp)
