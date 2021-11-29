@@ -136,6 +136,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
 
     // TODO : implement sz
     int page_num = sz / PGSIZE;
+    page_num = (sz % PGSIZE != 0) ? (page_num + 1) : page_num;
     
     uint64 *pgd = pgtbl;
     uint64 *pmd = NULL;
