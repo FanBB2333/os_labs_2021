@@ -141,7 +141,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         // if 1st entry doesn't exist, create a new one
         if( !page_exist(pgtbl[getvpn(va, 2)]) ){
             pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
-            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | (uint64)perm;
+            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10);
         }
         else{
             pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
@@ -150,7 +150,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         // layer 1
         if( !page_exist(pmd[getvpn(va, 1)]) ){
             pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
-            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | (uint64)perm;
+            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10);
         }
         else{
             pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
