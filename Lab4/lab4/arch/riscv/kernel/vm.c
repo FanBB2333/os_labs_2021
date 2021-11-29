@@ -59,9 +59,14 @@ extern char _ebss[];
 
 extern char _ekernel[];
 
-uint64 P2V(uint64 pa){
+uint64 PA2VA(uint64 pa){
     uint64 _offset = 0xffffffe000000000 - 0x80000000;
     return (_offset + pa);
+}
+
+uint64 VA2PA(uint64 va){
+    uint64 _offset = 0xffffffe000000000 - 0x80000000;
+    return (va - _offset);
 }
 
 void setup_vm_final(void) {
@@ -73,15 +78,15 @@ void setup_vm_final(void) {
 
     // mapping kernel text X|-|R|V
     perm = (1 << 0) | (1 << 1) | (1 << 3);
-    create_mapping(swapper_pg_dir, P2V((uint64)&_stext), (uint64)&_stext, (uint64)&_etext - (uint64)&_stext, perm);
+    create_mapping(swapper_pg_dir, PA2VA((uint64)&_stext), (uint64)&_stext, (uint64)&_etext - (uint64)&_stext, perm);
 
     // mapping kernel rodata -|-|R|V
     perm = (1 << 0) | (1 << 1);
-    create_mapping(swapper_pg_dir, P2V((uint64)&_srodata), (uint64)&_srodata, (uint64)&_erodata - (uint64)&_srodata, perm);
+    create_mapping(swapper_pg_dir, PA2VA((uint64)&_srodata), (uint64)&_srodata, (uint64)&_erodata - (uint64)&_srodata, perm);
 
     // mapping other memory -|W|R|V
     perm = (1 << 0) | (1 << 1) | (1 << 2);
-    create_mapping(swapper_pg_dir, P2V((uint64)&_sdata), (uint64)&_sdata, (uint64)VM_END - P2V((uint64)&_sdata), perm);
+    create_mapping(swapper_pg_dir, PA2VA((uint64)&_sdata), (uint64)&_sdata, (uint64)VM_END - PA2VA((uint64)&_sdata), perm);
 
     // set satp with swapper_pg_dir
 
