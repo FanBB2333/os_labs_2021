@@ -76,6 +76,7 @@ uint64 VA2PA(uint64 va){
 }
 
 void setup_vm_final(void) {
+    printk("setup_vm_final start\n");
     memset(swapper_pg_dir, 0x0, PGSIZE);
     // initialize to all mem 0x0
 
@@ -107,6 +108,8 @@ void setup_vm_final(void) {
 
     // flush TLB
     asm volatile("sfence.vma zero, zero");
+
+    printk("setup_vm_final done\n");
     return;
 }
 
@@ -148,6 +151,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         // if 1st entry doesn't exist, create a new one
         if( !page_exist(pgtbl[getvpn(va, 2)]) ){
             pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
+            memset(pmd, 0x0, PGSIZE);
             pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10);
         }
         else{
@@ -157,6 +161,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         // layer 1
         if( !page_exist(pmd[getvpn(va, 1)]) ){
             pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
+            memset(pte, 0x0, PGSIZE);
             pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10);
         }
         else{
