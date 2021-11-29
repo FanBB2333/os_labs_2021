@@ -85,20 +85,23 @@ void setup_vm_final(void) {
 
     // mapping kernel text X|-|R|V
     perm = (1 << 0) | (1 << 1) | (1 << 3);
-    create_mapping(swapper_pg_dir, (uint64)&_stext, VA2PA((uint64)&_stext), (uint64)&_etext - (uint64)&_stext, perm);
+    create_mapping(swapper_pg_dir, (uint64)_stext, VA2PA((uint64)_stext), (uint64)_etext - (uint64)_stext, perm);
 
     // mapping kernel rodata -|-|R|V
     perm = (1 << 0) | (1 << 1);
-    create_mapping(swapper_pg_dir, (uint64)&_srodata, VA2PA((uint64)&_srodata), (uint64)&_erodata - (uint64)&_srodata, perm);
+    create_mapping(swapper_pg_dir, (uint64)_srodata, VA2PA((uint64)_srodata), (uint64)_erodata - (uint64)_srodata, perm);
 
     // mapping other memory -|W|R|V
     perm = (1 << 0) | (1 << 1) | (1 << 2);
-    create_mapping(swapper_pg_dir, (uint64)&_sdata, VA2PA((uint64)&_sdata), (uint64)&_ebss - (uint64)&_sdata, perm);
+    create_mapping(swapper_pg_dir, (uint64)_sdata, VA2PA((uint64)_sdata), (uint64)&_ebss - (uint64)_sdata, perm);
+
+    perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+    create_mapping(swapper_pg_dir, (uint64)_ekernel, VA2PA((uint64)_ekernel), (VM_START + PHY_SIZE) - (uint64)_ekernel, perm);
 
     // set satp with swapper_pg_dir
 
     // YOUR CODE HERE
-    uint64 _satp = (8 << 60) | (VA2PA((uint64)&swapper_pg_dir) >> 12);
+    uint64 _satp = (8 << 60) | (VA2PA((uint64)swapper_pg_dir) >> 12);
     __asm__ volatile (
         "csrrw x0, satp, %[_satp]\n"
         :
