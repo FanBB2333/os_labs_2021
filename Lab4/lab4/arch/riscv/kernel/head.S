@@ -5,10 +5,11 @@
     .globl _start
     # .align 4
 _start:
+        la  sp, boot_stack_top
+        
         call setup_vm
         call relocate
     # YOUR CODE HERE
-        la  sp, boot_stack_top
         addi sp, sp, -8
         sd x10, 0(sp)
     # ------------------
@@ -59,9 +60,6 @@ _start:
 
     jal x0, start_kernel
 
-    .section .bss.stack
-    .globl boot_stack
-
 
     .global relocate
 relocate:
@@ -73,7 +71,7 @@ relocate:
     ######################
 
     # TODO: test whether there exists a negative mark before PA2VA_OFFSET
-    li  a0, 0xffffffff00000000 - 0xffffffe000000000
+    li  a0, 0xffffffe000000000 - 0x80000000
     add ra, ra, a0
     add sp, sp, a0
 
@@ -88,14 +86,14 @@ relocate:
     add t0, x0, x0
     add t1, x0, x0
     // mode field: 8, PPN field: early_pgtbl >> 12
-    li  t0, 8
+    li   t0, 8
     slli t0, t0, 60 
     // t0 = (8 << 60) 
     la  t1, early_pgtbl
     // Shift Right Logical Immediate
     srli t1, t1, 12
     // t1 = early_pgtbl >> 12
-    or   t0, t0, t1
+    or    t0, t0, t1
     csrrw x0, satp, t0
 
 

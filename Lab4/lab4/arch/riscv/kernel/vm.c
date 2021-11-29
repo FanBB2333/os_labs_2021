@@ -33,7 +33,13 @@ void setup_vm(void) {
     3. Page Table Entry 的权限 V | R | W | X 位设置为 1
     */
     unsigned long pte;
+    memset(early_pgtbl, 0x0, PGSIZE);
+
     pte = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (getppn(0x80000000, 2) << 28);
+
+    // printk("pte: %x\n", pte);
+    // printk("getvpn(0x80000000, 2): %d\n", getvpn(0x80000000, 2));
+    // printk("getppn(0xffffffe000000000, 2): %d\n", getvpn(0xffffffe000000000, 2));
     early_pgtbl[getvpn(0x80000000, 2)] = pte; // PA == VA
     early_pgtbl[getvpn(0xffffffe000000000, 2)] = pte; // PA + PV2VA_OFFSET == VA
     // relocate((long)PA2VA_OFFSET);
