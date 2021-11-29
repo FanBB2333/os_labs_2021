@@ -155,7 +155,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         if( !page_exist(pgtbl[getvpn(va, 2)]) ){
             pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
             memset(pmd, 0x0, PGSIZE);
-            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10);
+            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | 0x1;
         }
         else{
             pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
@@ -165,7 +165,7 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         if( !page_exist(pmd[getvpn(va, 1)]) ){
             pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
             memset(pte, 0x0, PGSIZE);
-            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10);
+            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | 0x1;
         }
         else{
             pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
