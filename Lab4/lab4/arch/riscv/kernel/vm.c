@@ -93,10 +93,10 @@ void setup_vm_final(void) {
 
     // mapping other memory -|W|R|V
     perm = (1 << 0) | (1 << 1) | (1 << 2);
-    create_mapping(swapper_pg_dir, (uint64)_sdata, VA2PA((uint64)_sdata), (uint64)&_ebss - (uint64)_sdata, perm);
+    create_mapping(swapper_pg_dir, (uint64)_sdata, VA2PA((uint64)_sdata), (uint64)_ebss - (uint64)_sdata, perm);
 
     perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
-    create_mapping(swapper_pg_dir, (uint64)_ekernel, VA2PA((uint64)_ekernel), (VM_START + PHY_SIZE) - (uint64)_ekernel, perm);
+    create_mapping(swapper_pg_dir, PGROUNDUP((uint64)_ekernel), VA2PA(PGROUNDUP((uint64)_ekernel)), (VM_START + PHY_SIZE) - PGROUNDUP((uint64)_ekernel), perm);
 
     // set satp with swapper_pg_dir
 
@@ -141,46 +141,48 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     // PT(Page Table)
 
     // TODO : implement sz
+    printk("create_mapping start\n");
     int page_num = sz / PGSIZE;
     page_num = (sz % PGSIZE != 0) ? (page_num + 1) : page_num;
+    printk("ready to allocate page: %d\n", page_num);
     
     uint64 *pgd = pgtbl;
     uint64 *pmd = NULL;
     uint64 *pte = NULL;
 
     for(int i = 0; i < page_num; i++){
+        printk("pte: %x, getvpn(va, 2,1,0): %d  %d  %d\n", pte, getvpn(va, 2), getvpn(va, 1), getvpn(va, 0));
 
         // layer 2
         // if 1st entry doesn't exist, create a new one
         if( !page_exist(pgtbl[getvpn(va, 2)]) ){
             pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
             memset(pmd, 0x0, PGSIZE);
-            pgtbl[getvpn(va, 2)] = (((uint64)pmd >> 12) << 10) | 0x1;
+            pgtbl[getvpn(va, 2)] = (( VA2PA((uint64)pmd) >> 12) << 10) | 0x1;
         }
         else{
-            pmd = ( pgtbl[getvpn(va, 2)] >> 10 ) << 12;
+            pmd = (uint64 *)PA2VA( ( pgtbl[getvpn(va, 2)] >> 10 ) << 12 );
         }
         
         // layer 1
         if( !page_exist(pmd[getvpn(va, 1)]) ){
             pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
             memset(pte, 0x0, PGSIZE);
-            pmd[getvpn(va, 1)] = (((uint64)pte >> 12) << 10) | 0x1;
+            pmd[getvpn(va, 1)] = (( VA2PA((uint64)pte) >> 12) << 10) | 0x1;
         }
         else{
-            pte = ( pmd[getvpn(va, 1)] >> 10 ) << 12;
+            pte = (uint64 *)PA2VA( ( pmd[getvpn(va, 1)] >> 10 ) << 12 );
         }
-
         // layer 0
         if( !page_exist(pte[getvpn(va, 0)]) ){
             pte[getvpn(va, 0)] = (((uint64)pa >> 12) << 10) | (uint64)perm;
         }
         else{
-            printk("EXISTING PAGE!!!\n");
+            printk("i: %d, EXISTING PAGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", i);
         }
         pa = pa + 1 * PGSIZE;
         va = va + 1 * PGSIZE;
     }
 
-    
+    printk("create_mapping done\n");
 }
