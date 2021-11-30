@@ -42,7 +42,7 @@ void task_init() {
         task[i]->priority = rand();
         task[i]->pid = i; 
         task[i]->thread.ra = (uint64)&__dummy;
-        printk("i: %d, pri: %d, ra: %l64u\n", i, task[i]->priority, task[i]->thread.ra);
+        printk("i: %d, pri: %d, ra: %lx\n", i, task[i]->priority, task[i]->thread.ra);
 
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
 
@@ -58,7 +58,7 @@ void dummy() {
     uint64 MOD = 1000000007;
     uint64 auto_inc_local_var = 0;
     int last_counter = -1;
-    // printk("dummy start!\n");
+    printk("dummy start!\n");
     while(1) {
         if (last_counter == -1 || current->counter != last_counter) {
             last_counter = current->counter;
@@ -119,9 +119,12 @@ int find_min_time(){
 #ifdef SJF
 void schedule(void) {
     /* YOUR CODE HERE */
+
     int all_zeros = 1;
     int min_index = find_min_time();
-    int min_time = task[min_index]->counter;
+    int min_time = (min_index == -1) ? -1 : task[min_index]->counter;
+
+    printk("min_idx : %d, min_time : %d\n", min_index, min_time);
     printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
@@ -146,7 +149,8 @@ void schedule(void) {
         }
         // schedule();
         min_index = find_min_time();
-        min_time = task[min_index]->counter;
+
+        min_time = (min_index == -1) ? -1 : task[min_index]->counter;
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
                 if(task[i]->counter < min_time){
