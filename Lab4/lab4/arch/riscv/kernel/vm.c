@@ -76,7 +76,7 @@ uint64 VA2PA(uint64 va){
 }
 
 void setup_vm_final(void) {
-    printk("setup_vm_final start\n");
+    // printk("setup_vm_final start\n");
     memset(swapper_pg_dir, 0x0, PGSIZE);
     // initialize to all mem 0x0
 
@@ -101,7 +101,10 @@ void setup_vm_final(void) {
     // set satp with swapper_pg_dir
 
     // YOUR CODE HERE
-    uint64 _satp = (8 << 60) | (VA2PA((uint64)swapper_pg_dir) >> 12);
+    uint64 _satp = (8L << 60) | (VA2PA((uint64)swapper_pg_dir) >> 12);
+    printk("_satp: %lx\n", _satp);
+    printk("_satp: %lx\n", (VA2PA((uint64)swapper_pg_dir) >> 12));
+
     __asm__ volatile (
         "csrrw x0, satp, %[_satp]\n"
         :
@@ -112,7 +115,7 @@ void setup_vm_final(void) {
     // flush TLB
     asm volatile("sfence.vma zero, zero");
 
-    printk("setup_vm_final done\n");
+    // printk("setup_vm_final done\n");
     return;
 }
 
@@ -141,17 +144,17 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
     // PT(Page Table)
 
     // TODO : implement sz
-    printk("create_mapping start\n");
+    // printk("create_mapping start\n");
     int page_num = sz / PGSIZE;
     page_num = (sz % PGSIZE != 0) ? (page_num + 1) : page_num;
-    printk("ready to allocate page: %d\n", page_num);
+    // printk("ready to allocate page: %d\n", page_num);
     
     uint64 *pgd = pgtbl;
     uint64 *pmd = NULL;
     uint64 *pte = NULL;
 
     for(int i = 0; i < page_num; i++){
-        printk("pte: %x, getvpn(va, 2,1,0): %d  %d  %d\n", pte, getvpn(va, 2), getvpn(va, 1), getvpn(va, 0));
+        // printk("pte: %x, getvpn(va, 2,1,0): %d  %d  %d\n", pte, getvpn(va, 2), getvpn(va, 1), getvpn(va, 0));
 
         // layer 2
         // if 1st entry doesn't exist, create a new one
@@ -184,5 +187,5 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
         va = va + 1 * PGSIZE;
     }
 
-    printk("create_mapping done\n");
+    // printk("create_mapping done\n");
 }
