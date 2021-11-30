@@ -125,6 +125,7 @@ void schedule(void) {
     int all_zeros = 1;
     int min_index = find_min_time();
     int min_time = task[min_index]->counter;
+    // printk("min_idx : %d, min_time : %d\n", min_index, min_time);
     // printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
