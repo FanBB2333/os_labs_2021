@@ -125,11 +125,110 @@ relocate:
 
 ### 4.2.2 setup_vm_final 的实现
 
+```c
+void setup_vm_final(void) {
+    memset(swapper_pg_dir, 0x0, PGSIZE);
+    // initialize to all mem 0x0
 
+    // No OpenSBI mapping required
+    int perm = 0;
+
+    // mapping kernel text X|-|R|V
+    perm = (1 << 0) | (1 << 1) | (1 << 3);
+    create_mapping(swapper_pg_dir, (uint64)_stext, VA2PA((uint64)_stext), (uint64)_etext - (uint64)_stext, perm);
+
+    // mapping kernel rodata -|-|R|V
+    perm = (1 << 0) | (1 << 1);
+    create_mapping(swapper_pg_dir, (uint64)_srodata, VA2PA((uint64)_srodata), (uint64)_erodata - (uint64)_srodata, perm);
+
+    // mapping other memory -|W|R|V
+    perm = (1 << 0) | (1 << 1) | (1 << 2);
+    create_mapping(swapper_pg_dir, (uint64)_sdata, VA2PA((uint64)_sdata), (uint64)_ebss - (uint64)_sdata, perm);
+
+    perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+    create_mapping(swapper_pg_dir, PGROUNDUP((uint64)_ekernel), VA2PA(PGROUNDUP((uint64)_ekernel)), (VM_START + PHY_SIZE) - PGROUNDUP((uint64)_ekernel), perm);
+
+    // set satp with swapper_pg_dir
+    // YOUR CODE HERE
+    uint64 _satp = (8L << 60) | (VA2PA((uint64)swapper_pg_dir) >> 12);
+    __asm__ volatile (
+        "csrrw x0, satp, %[_satp]\n"
+        :
+        :[_satp] "r" (_satp)
+        :"memory"
+	);
+
+    // flush TLB
+    asm volatile("sfence.vma zero, zero");
+
+    return;
+}
+```
 
 ### 4.2.3 create_mapping 的实现
 
+```c
+int page_exist(uint64 pte){
+    return (pte & 0x1);
+}
 
+/* 创建多级页表映射关系 */
+void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
+    /*
+    pgtbl 为根页表的基地址
+    va, pa 为需要映射的虚拟地址、物理地址
+    sz 为映射的大小
+    perm 为映射的读写权限
+
+    创建多级页表的时候可以使用 kalloc() 来获取一页作为页表目录
+    可以使用 V bit 来判断页表项是否存在
+    */
+    // 2   | (PUD) | 1   | 0   | OFFSET
+    // PGD | (PUD) | PMD | PTE | OFFSET
+
+    int page_num = sz / PGSIZE;
+    page_num = (sz % PGSIZE != 0) ? (page_num + 1) : page_num;
+    // printk("ready to allocate page: %d\n", page_num);
+    
+    uint64 *pgd = pgtbl;
+    uint64 *pmd = NULL;
+    uint64 *pte = NULL;
+
+    for(int i = 0; i < page_num; i++){
+        // printk("pte: %x, getvpn(va, 2,1,0): %d  %d  %d\n", pte, getvpn(va, 2), getvpn(va, 1), getvpn(va, 0));
+
+        // layer 2
+        // if 1st entry doesn't exist, create a new one
+        if( !page_exist(pgtbl[getvpn(va, 2)]) ){
+            pmd = (uint64 *)kalloc(); // 64-bit PPN in PDG
+            memset(pmd, 0x0, PGSIZE);
+            pgtbl[getvpn(va, 2)] = (( VA2PA((uint64)pmd) >> 12) << 10) | 0x1;
+        }
+        else{
+            pmd = (uint64 *)PA2VA( ( pgtbl[getvpn(va, 2)] >> 10 ) << 12 );
+        }
+        
+        // layer 1
+        if( !page_exist(pmd[getvpn(va, 1)]) ){
+            pte = (uint64 *)kalloc(); // 64-bit PPN in PMD
+            memset(pte, 0x0, PGSIZE);
+            pmd[getvpn(va, 1)] = (( VA2PA((uint64)pte) >> 12) << 10) | 0x1;
+        }
+        else{
+            pte = (uint64 *)PA2VA( ( pmd[getvpn(va, 1)] >> 10 ) << 12 );
+        }
+        // layer 0
+        if( !page_exist(pte[getvpn(va, 0)]) ){
+            pte[getvpn(va, 0)] = (((uint64)pa >> 12) << 10) | (uint64)perm;
+        }
+        else{
+            printk("i: %d, EXISTING PAGE!!!\n", i);
+        }
+        pa = pa + PGSIZE;
+        va = va + PGSIZE;
+    }
+}
+```
 ### 4.2.4 mm.c 中的更改
 
 由于在进行`mm_init`，即初始化可供`kalloc`分配的内存时，系统已经处于虚拟内存模式，因此需要修改`mm_init`函数接收的起始结束地址，将其均改为虚拟地址。需要注意的是，在进入`mm_init`函数时，由于我们已经设置过`satp`寄存器的值，开启了虚拟地址，符号表`System.map`和此处所读取到的`_ekernel`的值均为虚拟地址，这样符合我们的预期。
@@ -161,4 +260,6 @@ _start:
 ```
 
 ### 4.3 编译及测试
+
+### 4.4 思考与总结
 
