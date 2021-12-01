@@ -143,7 +143,22 @@ void mm_init(void) {
 ```
 
 ### 4.2.5 head.S 中的更改
+在head.S中，我们需要对刚刚完成的几个函数进行调用，调用时需要注意顺序关系，在最开头需要将系统栈`sp`指针初始化到正确的位置，之后便可以通过调用`setup_vm`函数来开启虚拟内存，并利用`relocate`函数来将`ra`, `sp`赋值到正确的位置，并对存有根页表基地址的`satp`寄存器进行赋值。
+这之后，系统便运行在了虚拟内存的状态下，由于在`setup_vm_final`中需要调用`create_mapping`函数，继而可能会调用到`kalloc`函数来进行内存分配的操作，因此在这之前需要将内存初始化完毕，也即需要将`mm_init`函数调用完毕，因此需要将`mm_init`函数调用的位置放在`setup_vm_final`之前。
 
+此外，我们将中断信号的开启以及相关寄存器的赋值放到了`setup_vm_final`后，这是因为在设置好第一次中断信号后，一秒后就会进入中断，我们并不能保证在所有设备上内存的初始化都能够在一秒内完成，否则在内存初始化的过程中产生了中断信号则会造成较为严重的后果。
+```assembly
+_start:
+    la  sp, boot_stack_top
+    call setup_vm
+    call relocate
+
+    call mm_init
+    call setup_vm_final
+
+    ......
+
+```
 
 ### 4.3 编译及测试
 
