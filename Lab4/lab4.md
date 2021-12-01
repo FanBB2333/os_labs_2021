@@ -5,13 +5,132 @@
 **姓名: **范钊瑀
 
 ## 4.1 准备工程
+在`defs.h`中需要添加以下的宏定义，由于该头文件将会被被`vm.c`, `mm.c`等头文件引用，我们需要预先定义好诸如OFFSET, VM的始末地址, OPENSBI_SIZE等宏。
+
+```c
+#define OPENSBI_SIZE (0x200000)
+
+#define VM_START (0xffffffe000000000)
+#define VM_END   (0xffffffff00000000)
+#define VM_SIZE  (VM_END - VM_START)
+
+#define PA2VA_OFFSET (VM_START - PHY_START)
+```
 
 
 ## 4.2 开启虚拟内存映射
 
 ### 4.2.1 setup_vm 的实现
 
+### 4.2.1.1 `setup_vm`函数
+`setup_vm`中，我们需要开启
+
+```c
+void setup_vm(void) {
+    /* 
+    1. 由于是进行 1GB 的映射 这里不需要使用多级页表 
+    2. 将 va 的 64bit 作为如下划分： | high bit | 9 bit | 30 bit |
+        high bit 可以忽略
+        中间9 bit 作为 early_pgtbl 的 index
+        低 30 bit 作为 页内偏移 这里注意到 30 = 9 + 9 + 12， 即我们只使用根页表， 根页表的每个 entry 都对应 1GB 的区域。 
+    3. Page Table Entry 的权限 V | R | W | X 位设置为 1
+    */
+    unsigned long pte;
+    memset(early_pgtbl, 0x0, PGSIZE);
+    pte = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (getppn(0x80000000, 2) << 28);
+    early_pgtbl[getvpn(0x80000000, 2)] = pte; // PA == VA
+    early_pgtbl[getvpn(0xffffffe000000000, 2)] = pte; // PA + PV2VA_OFFSET == VA
+}
+```
+
+为了便于我们从39位的虚拟地址中迅速获得想要的域的内容，我们可以定义一个函数，只需传入虚拟地址和需要获取的部分`VPN`的编号`i`，即可获得对应的`VPN[i]`。
+简单地说，函数就是将传入的虚拟地址右移对应的位数，并将其低9位mask出来并返回。
+```c
+//  38        30 29        21 20        12 11                           0
+//  ---------------------------------------------------------------------
+// |   VPN[2]   |   VPN[1]   |   VPN[0]   |          page offset         |
+//  ---------------------------------------------------------------------
+//                         Sv39 virtual address
+int getvpn(unsigned long va, int idx){
+    return ((va >> (12 + idx * 9)) & 0x1FF);
+}
+```
+
+类似地，从物理地址中获取对应`PPN[i]`域的内容的任务，我们也可以用一个函数来完成，和虚拟地址中有所不同的是，物理地址中，`PPN[2]`为26位，而`PPN[1]`和`PPN[0]`为9位，所以在取出时需要对不同的index设置不同长度的mask。
+```c
+//  55                30 29        21 20        12 11                           0
+//  -----------------------------------------------------------------------------
+// |       PPN[2]       |   PPN[1]   |   PPN[0]   |          page offset         |
+//  -----------------------------------------------------------------------------
+//                             Sv39 physical address
+int getppn(unsigned long pa, int idx){
+    if(idx == 0)
+        return (pa >> 12) & 0x1FF;
+    if(idx == 1)
+        return (pa >> 21) & 0x1FF;
+    if(idx == 2)
+        return (pa >> 30) & 0x3FFFFFF;
+}
+
+```
+### 4.2.1.2 `relocate`函数
+`relocate`函数位于汇编文件`head.S`中，在`relocate`函数中，我们既要对`ra`, `sp`进行设置，以适应开启虚拟地址后的映射，也要对`satp`寄存器进行设置，以指明根页表的基地址。
+由于`satp`寄存器的结构如下图所示，我们需要进行赋值的域为`MODE`和`PPN`。
+由于我们本次使用了`Sv39`模式的虚拟地址，即对应的虚拟地址有39位，同时需要将`MODE`域设为8
+```
+#  63      60 59                  44 43                                0
+#  ---------------------------------------------------------------------
+# |   MODE   |         ASID         |                PPN                |
+#  ---------------------------------------------------------------------
+```
+所以我们用`t0`寄存器存储左移后的`MODE`域的值。
+```assembly  
+    li   t0, 8
+    slli t0, t0, 60 
+```
+同理，我们用`t1`寄存器存储`PPN`域的值。由于`PA >> 12 == PPN`, 我们先获得`early_pgtbl`的地址，之后右移12位得到`PPN`域的值。
+```assembly
+    la   t1, early_pgtbl
+    srli t1, t1, 12
+```
+最后，我们将`t0`和`t1`的值进行或运算，得到`satp`寄存器的值，并用`csrrw`指令将其赋值给`satp`寄存器。
+
+
+```assembly
+relocate:
+    # set ra = ra + PA2VA_OFFSET
+    # set sp = sp + PA2VA_OFFSET (If you have set the sp before)
+    li  a0, 0xffffffe000000000 - 0x80000000
+    add ra, ra, a0
+    add sp, sp, a0
+
+    # set satp with early_pgtbl
+    add t0, x0, x0
+    add t1, x0, x0
+    // mode field: 8, PPN field: early_pgtbl >> 12
+    li   t0, 8
+    slli t0, t0, 60 
+    // t0 = (8 << 60) 
+    la  t1, early_pgtbl
+    // Shift Right Logical Immediate
+    srli t1, t1, 12
+    // t1 = early_pgtbl >> 12
+    or    t0, t0, t1
+    csrrw x0, satp, t0
+    # flush tlb
+    sfence.vma zero, zero
+    ret
+```
+
+
 ### 4.2.2 setup_vm_final 的实现
+
+
+
+### 4.2.3 create_mapping 的实现
+
+
+### 4.2.4 mm.c 中的更改
 
 
 ### 4.3 编译及测试
