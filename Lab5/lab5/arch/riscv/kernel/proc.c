@@ -27,7 +27,8 @@ void task_init() {
     idle->pid = 0;    
     current = idle;
     task[0] = idle;
-
+    // assign U-Mode Stack
+    idle->pgd = (pagetable_t)kalloc();
 
     // 1. 参考 idle 的设置, 为 task[1] ~ task[NR_TASKS - 1] 进行初始化
     // 2. 其中每个线程的 state 为 TASK_RUNNING, counter 为 0, priority 使用 rand() 来设置, pid 为该线程在线程数组中的下标。

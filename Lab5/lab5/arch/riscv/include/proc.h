@@ -17,22 +17,28 @@ struct thread_info {
     uint64 user_sp;
 };
 
+typedef unsigned long* pagetable_t;
+typedef uint64 uint64_t;
 /* 线程状态段数据结构 */
 struct thread_struct {
-    uint64 ra;
-    uint64 sp;
-    uint64 s[12];
+    uint64_t ra;
+    uint64_t sp;                     
+    uint64_t s[12];
+
+    uint64_t sepc, sstatus, sscratch; 
 };
 
 /* 线程数据结构 */
 struct task_struct {
     struct thread_info* thread_info;
-    uint64 state;    // 线程状态
-    uint64 counter;  // 运行剩余时间
-    uint64 priority; // 运行优先级 1最低 10最高
-    uint64 pid;      // 线程id
+    uint64_t state;
+    uint64_t counter;
+    uint64_t priority;
+    uint64_t pid;
 
     struct thread_struct thread;
+
+    pagetable_t pgd;
 };
 
 /* 线程初始化 创建 NR_TASKS 个线程 */
