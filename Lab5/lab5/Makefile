@@ -30,7 +30,7 @@ debug: all
 clean:
 	${MAKE} -C lib clean
 	${MAKE} -C init clean
-	${MAKE} -C user all
+	${MAKE} -C user clean
 	${MAKE} -C arch/riscv clean
 	$(shell test -f vmlinux && rm vmlinux)
 	$(shell test -f System.map && rm System.map)
