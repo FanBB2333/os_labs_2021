@@ -12,6 +12,7 @@ extern void __switch_to(struct task_struct* prev, struct task_struct* next);
 struct task_struct* idle;           // idle process
 struct task_struct* current;        // 指向当前运行线程的 `task_struct`
 struct task_struct* task[NR_TASKS]; // 线程数组，所有的线程都保存在此
+extern unsigned long  swapper_pg_dir[512];
 
 void task_init() {
     // 1. 调用 kalloc() 为 idle 分配一个物理页
@@ -28,7 +29,7 @@ void task_init() {
     current = idle;
     task[0] = idle;
     // assign U-Mode Stack
-    idle->pgd = (pagetable_t)kalloc();
+
 
     // 1. 参考 idle 的设置, 为 task[1] ~ task[NR_TASKS - 1] 进行初始化
     // 2. 其中每个线程的 state 为 TASK_RUNNING, counter 为 0, priority 使用 rand() 来设置, pid 为该线程在线程数组中的下标。
@@ -46,6 +47,12 @@ void task_init() {
         printk("i: %d, pri: %d, ra: %lx\n", i, task[i]->priority, task[i]->thread.ra);
 
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
+        // SPP SPIE SUM
+        task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
+        task[i]->thread.sepc = (uint64_t)USER_START;
+        task[i]->thread.sscratch = (uint64_t)USER_END;
+
+        // TODO: Copy swapper_pg_dir 
 
     }
 
