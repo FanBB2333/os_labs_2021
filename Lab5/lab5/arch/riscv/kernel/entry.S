@@ -30,6 +30,13 @@ __switch_to:
     sd s9, 128(x10)
     sd s10, 136(x10)
     sd s11, 144(x10)
+    
+    csrrs t0, sepc, x0 # csrr t0, sepc
+    sd t0, 152(x10)
+    csrrs t0, sstatus, x0 # csrr t0, sstatus
+    sd t0, 160(x10)
+    csrrs t0, sscratch, x0 # csrr t0, sscratch
+    sd t0, 168(x10)
 
 
 
@@ -51,6 +58,13 @@ __switch_to:
     ld s9, 128(x11)
     ld s10, 136(x11)
     ld s11, 144(x11)
+
+    ld t0, 152(x11)
+    csrrw x0, sepc, t0
+    ld t0, 160(x11)
+    csrrw x0, sstatus, t0
+    ld t0, 168(x11)
+    csrrw x0, sscratch, t0
 
     ret
 
