@@ -198,4 +198,14 @@ _traps_end:
     sret
     # -----------
 
-_exchange_sp:
+_exchange_sp_sscratch:
+
+    # exchange the stack pointers
+    # x-Mode -> x->Mode
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    beq _exchange_sp_sscratch_end, x10, x0 # if sscratch == 0, kernel-thread, end
+    add t1, sp, x0 # t1 = sp
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
+_exchange_sp_sscratch_end:
+    ret
