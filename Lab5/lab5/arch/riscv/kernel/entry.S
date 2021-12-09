@@ -124,17 +124,7 @@ _traps:
     csrrs x10, sepc, x0 # get sepc to x10
     sd x10, 0(sp)
     # -----------
-
-    
-    # exchange the stack pointers
-    # x-Mode -> x->Mode
-    csrrs x10, sscratch, x0 # x10 = sscratch
-    beq _traps_head, x10, x0 # if x10 == 0, jump to _traps_head
-    add x11, sp, x0 # x11 = sp
-    add sp, x10, x0
-    csrrw x0, sscratch, x11
-
-_traps_head:
+    jal ra, _exchange_sp_sscratch
 
         # 2. call trap_handler
     # need to pass the paras
@@ -143,15 +133,7 @@ _traps_head:
     call trap_handler
     # -----------
 
-        # exchange the stack pointers
-    # x-Mode -> x->Mode
-    csrrs x10, sscratch, x0 # x10 = sscratch
-    beq _traps_end, x10, x0 # if x10 == 0, jump to _traps_head
-    add x11, sp, x0 # x11 = sp
-    add sp, x10, x0
-    csrrw x0, sscratch, x11
-
-_traps_end:
+    jal ra, _exchange_sp_sscratch
 
         # 3. restore sepc and 32 registers (x2(sp) should be restore last) from stack
     ld x10, 0(sp)
