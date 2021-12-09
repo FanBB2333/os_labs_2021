@@ -86,6 +86,7 @@ _traps:
     # addi sp, sp, -8
     # sd x2,  0(sp)
 
+    # TODO: change the sequence
     addi sp, sp, -248
     addi sp, sp, -8
 

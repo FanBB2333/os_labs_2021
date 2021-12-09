@@ -3,6 +3,13 @@
 #include "printk.h"
 #include "proc.h"
 
+struct pt_regs {
+    uint64 x[32];
+    uint64 sepc;
+    uint64 sstatus;
+};
+
+
 int dec2bit(unsigned long num, int index) {
     return (num>>(index-1)) & 1;
 }
