@@ -13,7 +13,6 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
         case SYS_WRITE:
             // arguments: fd, buf, count
             // arguments: a0, a1, a2
-
             _ret = sys_write(regs->x[10], (char*)regs->x[11], regs->x[12]);
             break;
         case SYS_GETPID:
@@ -25,8 +24,16 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
         default:
             break;
     }
-    regs->x[10] = _ret;
 
+    __asm__ volatile (
+        "csrr t0, sepc\n"
+        "addi t0, t0, 4\n"
+        "csrw sepc, t0\n"
+        :
+        :
+        :"memory"
+	);
+    regs->x[10] = _ret;
 
     return _ret;
 }
