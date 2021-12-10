@@ -2,12 +2,8 @@
 #include "clock.h"
 #include "printk.h"
 #include "proc.h"
+#include "syscall.h"
 
-struct pt_regs {
-    uint64 x[32];
-    uint64 sepc;
-    uint64 sstatus;
-};
 
 
 int dec2bit(unsigned long num, int index) {
@@ -37,7 +33,8 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
         //Environment call from U-mode
         if (exception_code == 8) {
             printk("Environment call from U-mode\n");
-            // something else to do
+            // call system cal
+            syscall(regs, exception_code);
         }
 
         
