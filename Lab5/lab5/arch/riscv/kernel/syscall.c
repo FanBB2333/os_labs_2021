@@ -25,6 +25,8 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
         default:
             break;
     }
+    regs->x[10] = _ret;
+
 
     return _ret;
 }
