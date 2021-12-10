@@ -30,8 +30,6 @@ _start:
         # csrrsi x0, sie, 32
         # addi x10, x0, 32
 
-
-
         # li   x10, (1 << 5) 
         # csrw sip, x10
 
@@ -39,13 +37,9 @@ _start:
         csrw sie, x10
         # 32 : 100000
 
-
-
-
         ld x10, 0(sp)
         addi sp, sp, 8
     # ------------------
-
         # set first time interrupt
         call clock_set_next_event
     # ------------------
@@ -70,12 +64,6 @@ _start:
 relocate:
     # set ra = ra + PA2VA_OFFSET
     # set sp = sp + PA2VA_OFFSET (If you have set the sp before)
-
-    ###################### 
-    #   YOUR CODE HERE   #
-    ######################
-
-    # TODO: test whether there exists a negative mark before PA2VA_OFFSET
     li  a0, 0xffffffe000000000 - 0x80000000
     add ra, ra, a0
     add sp, sp, a0
