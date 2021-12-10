@@ -33,7 +33,7 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
         //Environment call from U-mode
         if (exception_code == 8) {
             printk("Environment call from U-mode\n");
-            // call system cal
+            // call system call
             syscall(regs, exception_code);
         }
 

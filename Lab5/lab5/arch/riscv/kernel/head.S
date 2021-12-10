@@ -52,9 +52,10 @@ _start:
         addi sp, sp, -8
         sd x10, 0(sp)
         # set sstatus[SIE] = 1
-        # csrrsi x0, sstatus, 2
-        li   x10, (1 << 1)
-        csrw sstatus, x10
+
+        # comment on lab5-4.5
+        # li   x10, (1 << 1)
+        # csrw sstatus, x10
 
         ld x10, 0(sp)
         addi sp, sp, 8
