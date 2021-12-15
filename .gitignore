@@ -12,3 +12,8 @@ System.map
 vmlinux
 
 Lab4/lab4/arch/riscv/kernel/vmlinux.lds
+
+Lab5/lab5/arch/riscv/kernel/vmlinux.lds
+Lab5/lab5/user/uapp.bin
+Lab5/lab5/user/uapp.elf
+
