@@ -6,6 +6,7 @@
 #include "rand.h"
 #include "vm.h"
 
+
 extern void __dummy();
 extern void __switch_to(struct task_struct* prev, struct task_struct* next);
 
@@ -59,8 +60,14 @@ void task_init() {
 
 
         // Copy swapper_pg_dir to the user pagetable
+
+        int a=1;
         task[i]->pgd = kalloc();
-        memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
+        // memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
+        for (int j = 0; j < 512; j++){
+            task[i]->pgd[j] = swapper_pg_dir[j];
+        }
+        
         //X|W|R|V
         int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
         create_mapping(task[i]->pgd, PA2VA(USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);

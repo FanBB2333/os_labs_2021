@@ -1,4 +1,3 @@
-unsigned long  swapper_pg_dir[512] __attribute__((__aligned__(0x1000)));
 int getvpn(unsigned long va, int idx);
 int getppn(unsigned long pa, int idx);
 extern void relocate(long OFFSET);
