@@ -52,21 +52,22 @@ void task_init() {
         // SPP SPIE SUM
         task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
         task[i]->thread.sepc = (uint64_t)USER_START;
-        task[i]->thread.sscratch = (uint64_t)USER_END;
+
 
 
         // assign a U-Mode Stack
-        task[i]->thread_info->user_sp = kalloc();
-
+        // U-Mode sp: USER_END
+        task[i]->thread.sscratch = ((uint64)kalloc() + (uint64)PGSIZE); 
 
         // Copy swapper_pg_dir to the user pagetable
 
-        int a=1;
         task[i]->pgd = kalloc();
         // memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
+        printk("5\n");
         for (int j = 0; j < 512; j++){
             task[i]->pgd[j] = swapper_pg_dir[j];
         }
+        printk("6\n");
         
         //X|W|R|V
         int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
