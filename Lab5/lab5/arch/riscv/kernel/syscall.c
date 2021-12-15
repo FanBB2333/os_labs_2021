@@ -2,7 +2,7 @@
 #include "defs.h"
 #include "types.h"
 #include "proc.h"
-#include "printf.c"
+#include "printk.h"
 
 extern struct task_struct* current;
 
@@ -39,11 +39,12 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
 }
 
 uint64 sys_write(unsigned int fd, const char* buf, uint64 count){
-    int i;
-    for(i = 0; i < count; i++){
-        putc(buf[i]);
+    int total_out = 0;
+    for(int i = 0; i < count && !buf[i]; i++){
+        printk(buf[i]);
+        total_out++;
     }
-    return count;
+    return total_out;
 }
 
 uint64 sys_getpid(){
