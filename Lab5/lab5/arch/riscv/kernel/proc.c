@@ -4,6 +4,7 @@
 #include "defs.h"
 #include "mm.h"
 #include "rand.h"
+#include "vm.h"
 
 extern void __dummy();
 extern void __switch_to(struct task_struct* prev, struct task_struct* next);
@@ -52,7 +53,17 @@ void task_init() {
         task[i]->thread.sepc = (uint64_t)USER_START;
         task[i]->thread.sscratch = (uint64_t)USER_END;
 
-        // TODO: Copy swapper_pg_dir 
+
+        // assign a U-Mode Stack
+        task[i]->thread_info->user_sp = kalloc();
+
+
+        // Copy swapper_pg_dir to the user pagetable
+        task[i]->pgd = kalloc();
+        memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
+        //X|W|R|V
+        int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+        create_mapping(task[i]->pgd, PA2VA(USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);
 
     }
 
