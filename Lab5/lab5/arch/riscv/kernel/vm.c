@@ -2,11 +2,10 @@
 #include "mm.h"
 #include "string.h"
 #include "printk.h"
-
+#include "vm.h"
 // arch/riscv/kernel/vm.c
 
-extern void relocate(long OFFSET);
-void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
+
 /* early_pgtbl: 用于 setup_vm 进行 1GB 的 映射。 */
 unsigned long  early_pgtbl[512] __attribute__((__aligned__(0x1000)));
 
@@ -50,20 +49,6 @@ void setup_vm(void) {
 
 /* swapper_pg_dir: kernel pagetable 根目录， 在 setup_vm_final 进行映射。 */
 unsigned long  swapper_pg_dir[512] __attribute__((__aligned__(0x1000)));
-
-extern char _stext[];
-extern char _etext[];
-
-extern char _srodata[];
-extern char _erodata[];
-
-extern char _sdata[];
-extern char _edata[];
-
-extern char _sbss[];
-extern char _ebss[];
-
-extern char _ekernel[];
 
 uint64 PA2VA(uint64 pa){
     uint64 _offset = 0xffffffe000000000 - 0x80000000;
