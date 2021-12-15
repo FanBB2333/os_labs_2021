@@ -63,11 +63,9 @@ void task_init() {
 
         task[i]->pgd = kalloc();
         // memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
-        printk("5\n");
         for (int j = 0; j < 512; j++){
             task[i]->pgd[j] = swapper_pg_dir[j];
         }
-        printk("6\n");
         
         //X|W|R|V
         int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);

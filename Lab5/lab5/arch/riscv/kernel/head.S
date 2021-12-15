@@ -86,11 +86,6 @@ relocate:
     // t1 = early_pgtbl >> 12
     or    t0, t0, t1
     csrrw x0, satp, t0
-
-
-
-
-
     # flush tlb
     sfence.vma zero, zero
 
