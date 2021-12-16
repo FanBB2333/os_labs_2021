@@ -58,12 +58,13 @@ void dummy() {
     uint64 MOD = 1000000007;
     uint64 auto_inc_local_var = 0;
     int last_counter = -1;
-    printk("dummy start!\n");
+    // printk("dummy start!\n");
     while(1) {
         if (last_counter == -1 || current->counter != last_counter) {
             last_counter = current->counter;
             auto_inc_local_var = (auto_inc_local_var + 1) % MOD;
-            printk("[PID = %d] is running. auto_inc_local_var = %d\n", current->pid, auto_inc_local_var);
+            // printk("[PID = %d] is running. auto_inc_local_var = %d\n", current->pid, auto_inc_local_var);
+            printk("[PID = %d] is running! thread space begin at %lx\n", current->pid, current->thread.sp);
         }
     }
 }
@@ -124,8 +125,8 @@ void schedule(void) {
     int min_index = find_min_time();
     int min_time = (min_index == -1) ? -1 : task[min_index]->counter;
 
-    printk("min_idx : %d, min_time : %d\n", min_index, min_time);
-    printk("schedule\n");
+    // printk("min_idx : %d, min_time : %d\n", min_index, min_time);
+    // printk("schedule\n");
     for(int i = 1; i < NR_TASKS; i++){
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
@@ -138,7 +139,7 @@ void schedule(void) {
 
         }
     }
-    printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
+    // printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
@@ -162,7 +163,7 @@ void schedule(void) {
         }
     }
     // schedule ith process
-    printk("switch_to %d\n", min_index);
+    // printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
     
 }
