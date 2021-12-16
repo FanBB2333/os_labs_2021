@@ -51,7 +51,7 @@ void task_init() {
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
         // SPP SPIE SUM
         task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
-        task[i]->thread.sepc = (uint64_t)USER_START;
+        task[i]->thread.sepc = PA2VA(USER_START);
 
 
 
@@ -67,8 +67,8 @@ void task_init() {
             task[i]->pgd[j] = swapper_pg_dir[j];
         }
         
-        //X|W|R|V
-        int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+        //D|A|G|U|X|W|R|V|
+        int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
         create_mapping(task[i]->pgd, PA2VA(USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);
 
     }
