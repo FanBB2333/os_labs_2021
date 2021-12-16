@@ -125,7 +125,7 @@ _traps:
     csrrs x10, sstatus, x0 # get sstatus to x10
     sd x10, 264(sp)
 
-
+    add x12, sp, x0 # x12 = sp, temp save sp
     # -----------
     jal ra, _exchange_sp_sscratch
 
@@ -133,6 +133,7 @@ _traps:
     # need to pass the paras
     csrr x10, scause
     csrr x11, sepc
+
     call trap_handler
     # -----------
 
@@ -189,7 +190,7 @@ _exchange_sp_sscratch:
     # exchange the stack pointers
     # x-Mode -> x->Mode
     csrrs t0, sscratch, x0 # t0 = sscratch
-    beq x10, x0, _exchange_sp_sscratch_end# if sscratch == 0, kernel-thread, end
+    beq t0, x0, _exchange_sp_sscratch_end# if sscratch == 0, kernel-thread, end
     add t1, sp, x0 # t1 = sp
     add sp, t0, x0
     csrrw x0, sscratch, t1
