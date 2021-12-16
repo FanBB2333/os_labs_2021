@@ -27,8 +27,6 @@ _start:
     # ------------------
 
         # set sie[STIE] = 1
-        # csrrsi x0, sie, 32
-        # addi x10, x0, 32
 
         # li   x10, (1 << 5) 
         # csrw sip, x10

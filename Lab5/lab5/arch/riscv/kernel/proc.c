@@ -49,7 +49,7 @@ void task_init() {
         printk("i: %d, pri: %d, ra: %lx\n", i, task[i]->priority, task[i]->thread.ra);
 
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
-        // SPP SPIE SUM
+        // 8:SPP 5:SPIE 18:SUM
         task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
         task[i]->thread.sepc = PA2VA(USER_START);
 
