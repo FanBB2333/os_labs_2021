@@ -28,7 +28,7 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
     }
 
     else if(interrupt == 0){
-        printk("exception: %d\n", scause);
+        printk("exception: %d, sepc: %lx\n", scause, sepc);
         unsigned long exception_code = scause - (1UL << 63); 
         //Environment call from U-mode
         if (exception_code == 8) {
