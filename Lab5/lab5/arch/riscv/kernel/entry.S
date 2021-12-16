@@ -38,12 +38,24 @@ __switch_to:
     sd s10, 136(x10)
     sd s11, 144(x10)
     
+    // save sepc, sstatus, sscratch
     csrrs t0, sepc, x0 # csrr t0, sepc
     sd t0, 152(x10)
     csrrs t0, sstatus, x0 # csrr t0, sstatus
     sd t0, 160(x10)
     csrrs t0, sscratch, x0 # csrr t0, sscratch
     sd t0, 168(x10)
+
+    # store new page table
+    csrrs t0, satp, x0 # csrr t0, satp, t0 = satp
+
+    li t1, 0xfffffffffff
+    and t0, t0, t1 # t0 = satp & 0xfffffffffff, lowest 44 bits(PPN, but is physical address)
+    slli t0, t0, 12 # t0 = t0 << 12, PA = PPN << 12 ( physical address PA)
+
+    li t1, 0xffffffe000000000 - 0x80000000
+    add t0, t0, t1 # t0 = PA + PA2VA_OFFSET
+    sd t0, 176(x10)
 
 
 
@@ -72,6 +84,16 @@ __switch_to:
     csrrw x0, sstatus, t0
     ld t0, 168(x11)
     csrrw x0, sscratch, t0
+
+    # load new page table
+    ld t0, 176(x11) # t0 = PA (is a virtual address)
+    li t1, 0xffffffe000000000 - 0x80000000
+    sub t0, t0, t1 # t0 = pgd - PA2VA_OFFSET, t0 = PA( physical address )
+
+    srli t0, t0, 12 # t0 = t0 >> 12, PPN = PA >> 12
+    li t1, 8 << 60
+    or t0, t0, t1
+    csrrw x0, satp, t0
 
     ret
 
