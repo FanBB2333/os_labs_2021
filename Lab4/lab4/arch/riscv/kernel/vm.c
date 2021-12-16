@@ -42,7 +42,6 @@ void setup_vm(void) {
     // printk("getppn(0xffffffe000000000, 2): %d\n", getvpn(0xffffffe000000000, 2));
     early_pgtbl[getvpn(0x80000000, 2)] = pte; // PA == VA
     early_pgtbl[getvpn(0xffffffe000000000, 2)] = pte; // PA + PV2VA_OFFSET == VA
-    // relocate((long)PA2VA_OFFSET);
     
 }
 
@@ -102,8 +101,8 @@ void setup_vm_final(void) {
 
     // YOUR CODE HERE
     uint64 _satp = (8L << 60) | (VA2PA((uint64)swapper_pg_dir) >> 12);
-    printk("_satp: %lx\n", _satp);
-    printk("_satp: %lx\n", (VA2PA((uint64)swapper_pg_dir) >> 12));
+    // printk("_satp: %lx\n", _satp);
+    // printk("_satp: %lx\n", (VA2PA((uint64)swapper_pg_dir) >> 12));
 
     __asm__ volatile (
         "csrrw x0, satp, %[_satp]\n"

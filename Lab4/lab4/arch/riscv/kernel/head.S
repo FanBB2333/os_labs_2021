@@ -100,10 +100,6 @@ relocate:
     or    t0, t0, t1
     csrrw x0, satp, t0
 
-
-
-
-
     # flush tlb
     sfence.vma zero, zero
 
