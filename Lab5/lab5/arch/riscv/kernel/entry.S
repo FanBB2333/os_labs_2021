@@ -3,9 +3,9 @@
 
     .global __dummy
 __dummy:
-    # YOUR CODE HERE
-    la x10, dummy
-    csrrw x0, sepc, x10 # restore sepc
+    # la x10, dummy
+    # csrrw x0, sepc, x10 # restore sepc
+    
     # exchange the stack pointers
     # S-Mode -> U->Mode
     csrrs x10, sscratch, x0 # x10 = sscratch

@@ -38,7 +38,6 @@ void task_init() {
     // 3. 为 task[1] ~ task[NR_TASKS - 1] 设置 `thread_struct` 中的 `ra` 和 `sp`,
     // 4. 其中 `ra` 设置为 __dummy （见 4.3.2）的地址， `sp` 设置为 该线程申请的物理页的高地址
 
-    /* YOUR CODE HERE */
     for(int i = 1; i < NR_TASKS; i++){
         task[i] = (struct task_struct *)kalloc();
         task[i]->state = TASK_RUNNING;
@@ -51,7 +50,7 @@ void task_init() {
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
         // 8:SPP 5:SPIE 18:SUM
         task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
-        task[i]->thread.sepc = PA2VA(USER_START);
+        task[i]->thread.sepc = (USER_START);
 
 
 
@@ -68,9 +67,11 @@ void task_init() {
         }
         
         //D|A|G|U|X|W|R|V|
-        int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
-        create_mapping(task[i]->pgd, PA2VA(USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);
+        //7|6|5|4|3|2|1|0|
 
+        int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
+        create_mapping(task[i]->pgd, (USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);
+        create_mapping(task[i]->pgd, (uint64)USER_END - (uint64)PGSIZE, VA2PA((uint64)task[i]->thread.sscratch - (uint64)PGSIZE), (uint64)PGSIZE, perm);
     }
 
 
