@@ -49,7 +49,7 @@ void task_init() {
 
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
         // 8:SPP 5:SPIE 18:SUM
-        task[i]->thread.sstatus = (1L << 8) | (1L << 5) | (1L << 18);
+        task[i]->thread.sstatus = (1L << 5) | (1L << 18);
         task[i]->thread.sepc = (USER_START);
 
 
