@@ -55,8 +55,9 @@ void task_init() {
 
 
         // assign a U-Mode Stack
+        uint64 U_SP_VM = ((uint64)kalloc() + (uint64)PGSIZE); 
         // U-Mode sp: USER_END
-        task[i]->thread.sscratch = ((uint64)kalloc() + (uint64)PGSIZE); 
+        task[i]->thread.sscratch = (uint64)USER_END;
 
         // Copy swapper_pg_dir to the user pagetable
 
@@ -71,7 +72,7 @@ void task_init() {
 
         int perm = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
         create_mapping(task[i]->pgd, (USER_START), VA2PA((uint64)uapp_start), (uint64)uapp_end - (uint64)uapp_start, perm);
-        create_mapping(task[i]->pgd, (uint64)USER_END - (uint64)PGSIZE, VA2PA((uint64)task[i]->thread.sscratch - (uint64)PGSIZE), (uint64)PGSIZE, perm);
+        create_mapping(task[i]->pgd, (uint64)USER_END - (uint64)PGSIZE, VA2PA(U_SP_VM), (uint64)PGSIZE, perm);
     }
 
 
