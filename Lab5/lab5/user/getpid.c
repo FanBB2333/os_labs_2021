@@ -4,6 +4,7 @@
 
 static inline long getpid() {
     long ret;
+    // printf("getpid start with pid: %d\n", SYS_GETPID);
     asm volatile ("li a7, %1\n"
                   "ecall\n"
                   "mv %0, a0\n"
