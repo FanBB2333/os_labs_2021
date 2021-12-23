@@ -104,6 +104,14 @@ _traps:
 
     # addi sp, sp, -8
     # sd x2,  0(sp)
+    # exchange the stack pointers
+    # x-Mode -> x->Mode
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    beq t0, x0, _exchange_sp_sscratch_end1# if sscratch == 0, kernel-thread, end
+    add t1, sp, x0 # t1 = sp
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
+_exchange_sp_sscratch_end1:
 
     # TODO: test the sequence
     addi sp, sp, -264
@@ -147,61 +155,69 @@ _traps:
     csrrs x10, sstatus, x0 # get sstatus to x10
     sd x10, 264(sp)
 
-    add x12, sp, x0 # x12 = sp, temp save sp
     # -----------
-    jal ra, _exchange_sp_sscratch
+    # jal ra, _exchange_sp_sscratch
 
     # 2. call trap_handler
     # need to pass the paras
     csrr x10, scause
     csrr x11, sepc
+    add  x12, sp, x0
 
     call trap_handler
     # -----------
 
-    jal ra, _exchange_sp_sscratch
+    # jal ra, _exchange_sp_sscratch
 
     # 3. restore sepc and 32 registers (x2(sp) should be restore last) from stack
     ld x10, 256(sp)
-    csrrw x0, sepc, x10 # restore sepc
+    # addi x10, x10, 4
+    # csrrw x0, sepc, x10 # restore sepc
     ld x10, 264(sp)
     csrrw x0, sstatus, x10 # restore sstatus
 
-    sd x0,  0(sp)
-    sd x1,  8(sp)
-    # sd x2,  16(sp)
-    sd x3,  24(sp)
-    sd x4,  32(sp)
-    sd x5,  40(sp)
-    sd x6,  48(sp)
-    sd x7,  56(sp)
-    sd x8,  64(sp)
-    sd x9,  72(sp)
-    sd x10, 80(sp)
-    sd x11, 88(sp)
-    sd x12, 96(sp)
-    sd x13, 104(sp)
-    sd x14, 112(sp)
-    sd x15, 120(sp)
-    sd x16, 128(sp)
-    sd x17, 136(sp)
-    sd x18, 144(sp)
-    sd x19, 152(sp)
-    sd x20, 160(sp)
-    sd x21, 168(sp)
-    sd x22, 176(sp)
-    sd x23, 184(sp)
-    sd x24, 192(sp)
-    sd x25, 200(sp)
-    sd x26, 208(sp)
-    sd x27, 216(sp)
-    sd x28, 224(sp)
-    sd x29, 232(sp)
-    sd x30, 240(sp)
-    sd x31, 248(sp)
+    ld x0,  0(sp)
+    ld x1,  8(sp)
+    ld x2,  16(sp)
+    ld x3,  24(sp)
+    ld x4,  32(sp)
+    ld x5,  40(sp)
+    ld x6,  48(sp)
+    ld x7,  56(sp)
+    ld x8,  64(sp)
+    ld x9,  72(sp)
+    ld x10, 80(sp)
+    ld x11, 88(sp)
+    ld x12, 96(sp)
+    ld x13, 104(sp)
+    ld x14, 112(sp)
+    ld x15, 120(sp)
+    ld x16, 128(sp)
+    ld x17, 136(sp)
+    ld x18, 144(sp)
+    ld x19, 152(sp)
+    ld x20, 160(sp)
+    ld x21, 168(sp)
+    ld x22, 176(sp)
+    ld x23, 184(sp)
+    ld x24, 192(sp)
+    ld x25, 200(sp)
+    ld x26, 208(sp)
+    ld x27, 216(sp)
+    ld x28, 224(sp)
+    ld x29, 232(sp)
+    ld x30, 240(sp)
+    ld x31, 248(sp)
 
     addi sp, sp, 264
     addi sp, sp, 8
+
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    beq t0, x0, _exchange_sp_sscratch_end2# if sscratch == 0, kernel-thread, end
+    add t1, sp, x0 # t1 = sp
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
+_exchange_sp_sscratch_end2:
     # -----------
     # 4. return from trap
     sret

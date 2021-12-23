@@ -13,11 +13,23 @@ static inline long getpid() {
     return ret;
 }
 
+void aaa() {
+    printf("aaa\n");    
+}
+
+void bbb() {
+    printf("bbb\n");
+}
+
 int main() {
     register unsigned long current_sp __asm__("sp");
     while (1) {
-        printf("[U-MODE] pid: %ld, sp is %lx\n", getpid(), current_sp);
+        printf("This is a sample output from user space.\n");
+        printf("[U-MODE] pid: %ld\n", getpid());
+        // printf("[U-MODE] pid: %ld, sp is %lx\n", getpid(), current_sp);
+
         for (unsigned int i = 0; i < 0x4FFFFFFF; i++);
+
     }
 
     return 0;

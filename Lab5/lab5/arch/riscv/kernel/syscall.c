@@ -13,10 +13,12 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
         case SYS_WRITE:
             // arguments: fd, buf, count
             // arguments: a0, a1, a2
-            _ret = sys_write(regs->x[10], (char*)regs->x[11], regs->x[12]);
+            _ret = sys_write(regs->x[10], regs->x[11], regs->x[12]);
+            regs->x[10] = _ret;
             break;
         case SYS_GETPID:
             _ret = sys_getpid();
+            printk("getpid: %ld\n", _ret);
             // x[10] is a0
             regs->x[10] = _ret;
             break;
@@ -40,10 +42,12 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
 
 uint64 sys_write(unsigned int fd, const char* buf, uint64 count){
     int total_out = 0;
-    for(int i = 0; i < count && !buf[i]; i++){
-        printk(buf[i]);
+    printk("start write\n");
+    for(int i = 0; i < count && buf[i]; i++){
+        printk("%c", buf[i]);
         total_out++;
     }
+    printk("end write\n");
     return total_out;
 }
 

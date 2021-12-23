@@ -1,7 +1,6 @@
 target remote :1234
 layout asm
 b *0x80200000
-c
-b *0x8020149c
+b * 0x802014f8
 c
 ni
