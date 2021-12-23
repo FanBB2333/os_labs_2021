@@ -5,7 +5,7 @@ user/uapp.elf:     file format elf64-littleriscv
 Disassembly of section .text.init:
 
 0000000000000000 <_start>:
-   0:	0780006f          	j	78 <main>
+   0:	0900006f          	j	90 <main>
 
 Disassembly of section .text.getpid:
 
@@ -27,54 +27,54 @@ Disassembly of section .text.getpid:
 Disassembly of section .text.aaa:
 
 0000000000000038 <aaa>:
-  38:	fe010113          	addi	sp,sp,-32
-  3c:	00813c23          	sd	s0,24(sp)
-  40:	02010413          	addi	s0,sp,32
-  44:	fe042623          	sw	zero,-20(s0)
-  48:	00000013          	nop
-  4c:	01813403          	ld	s0,24(sp)
-  50:	02010113          	addi	sp,sp,32
-  54:	00008067          	ret
+  38:	ff010113          	addi	sp,sp,-16
+  3c:	00113423          	sd	ra,8(sp)
+  40:	00813023          	sd	s0,0(sp)
+  44:	01010413          	addi	s0,sp,16
+  48:	71800513          	li	a0,1816
+  4c:	640000ef          	jal	ra,68c <printf>
+  50:	00000013          	nop
+  54:	00813083          	ld	ra,8(sp)
+  58:	00013403          	ld	s0,0(sp)
+  5c:	01010113          	addi	sp,sp,16
+  60:	00008067          	ret
 
 Disassembly of section .text.bbb:
 
-0000000000000058 <bbb>:
-  58:	fe010113          	addi	sp,sp,-32
-  5c:	00813c23          	sd	s0,24(sp)
-  60:	02010413          	addi	s0,sp,32
-  64:	fe042623          	sw	zero,-20(s0)
-  68:	00000013          	nop
-  6c:	01813403          	ld	s0,24(sp)
-  70:	02010113          	addi	sp,sp,32
-  74:	00008067          	ret
+0000000000000064 <bbb>:
+  64:	ff010113          	addi	sp,sp,-16
+  68:	00113423          	sd	ra,8(sp)
+  6c:	00813023          	sd	s0,0(sp)
+  70:	01010413          	addi	s0,sp,16
+  74:	72000513          	li	a0,1824
+  78:	614000ef          	jal	ra,68c <printf>
+  7c:	00000013          	nop
+  80:	00813083          	ld	ra,8(sp)
+  84:	00013403          	ld	s0,0(sp)
+  88:	01010113          	addi	sp,sp,16
+  8c:	00008067          	ret
 
 Disassembly of section .text.main:
 
-0000000000000078 <main>:
-  78:	fe010113          	addi	sp,sp,-32
-  7c:	00113c23          	sd	ra,24(sp)
-  80:	00813823          	sd	s0,16(sp)
-  84:	02010413          	addi	s0,sp,32
-  88:	f7dff0ef          	jal	ra,4 <getpid>
-  8c:	00050793          	mv	a5,a0
-  90:	00010713          	mv	a4,sp
-  94:	00070613          	mv	a2,a4
-  98:	00078593          	mv	a1,a5
-  9c:	71800513          	li	a0,1816
-  a0:	5ec000ef          	jal	ra,68c <printf>
-  a4:	f95ff0ef          	jal	ra,38 <aaa>
-  a8:	fe042623          	sw	zero,-20(s0)
-  ac:	0100006f          	j	bc <main+0x44>
-  b0:	fec42783          	lw	a5,-20(s0)
-  b4:	0017879b          	addiw	a5,a5,1
-  b8:	fef42623          	sw	a5,-20(s0)
-  bc:	fec42783          	lw	a5,-20(s0)
-  c0:	0007871b          	sext.w	a4,a5
-  c4:	500007b7          	lui	a5,0x50000
-  c8:	ffe78793          	addi	a5,a5,-2 # 4ffffffe <buffer+0x4ffff866>
-  cc:	fee7f2e3          	bgeu	a5,a4,b0 <main+0x38>
-  d0:	f89ff0ef          	jal	ra,58 <bbb>
-  d4:	fb5ff06f          	j	88 <main+0x10>
+0000000000000090 <main>:
+  90:	fe010113          	addi	sp,sp,-32
+  94:	00113c23          	sd	ra,24(sp)
+  98:	00813823          	sd	s0,16(sp)
+  9c:	02010413          	addi	s0,sp,32
+  a0:	f65ff0ef          	jal	ra,4 <getpid>
+  a4:	00050793          	mv	a5,a0
+  a8:	fef42423          	sw	a5,-24(s0)
+  ac:	fe042623          	sw	zero,-20(s0)
+  b0:	0100006f          	j	c0 <main+0x30>
+  b4:	fec42783          	lw	a5,-20(s0)
+  b8:	0017879b          	addiw	a5,a5,1
+  bc:	fef42623          	sw	a5,-20(s0)
+  c0:	fec42783          	lw	a5,-20(s0)
+  c4:	0007871b          	sext.w	a4,a5
+  c8:	500007b7          	lui	a5,0x50000
+  cc:	ffe78793          	addi	a5,a5,-2 # 4ffffffe <buffer+0x4ffff876>
+  d0:	fee7f2e3          	bgeu	a5,a4,b4 <main+0x24>
+  d4:	fcdff06f          	j	a0 <main+0x10>
 
 Disassembly of section .text.putc:
 
@@ -84,13 +84,13 @@ Disassembly of section .text.putc:
   e0:	02010413          	addi	s0,sp,32
   e4:	00050793          	mv	a5,a0
   e8:	fef407a3          	sb	a5,-17(s0)
-  ec:	79000793          	li	a5,1936
+  ec:	78000793          	li	a5,1920
   f0:	0007a783          	lw	a5,0(a5)
   f4:	0017871b          	addiw	a4,a5,1
   f8:	0007069b          	sext.w	a3,a4
-  fc:	79000713          	li	a4,1936
+  fc:	78000713          	li	a4,1920
  100:	00d72023          	sw	a3,0(a4)
- 104:	79800713          	li	a4,1944
+ 104:	78800713          	li	a4,1928
  108:	00f707b3          	add	a5,a4,a5
  10c:	fef44703          	lbu	a4,-17(s0)
  110:	00e78023          	sb	a4,0(a5)
@@ -126,11 +126,11 @@ Disassembly of section .text.vprintfmt:
  178:	02069793          	slli	a5,a3,0x20
  17c:	0207d793          	srli	a5,a5,0x20
  180:	00279713          	slli	a4,a5,0x2
- 184:	73800793          	li	a5,1848
+ 184:	72800793          	li	a5,1832
  188:	00f707b3          	add	a5,a4,a5
  18c:	0007a783          	lw	a5,0(a5)
  190:	0007871b          	sext.w	a4,a5
- 194:	73800793          	li	a5,1848
+ 194:	72800793          	li	a5,1832
  198:	00f707b3          	add	a5,a4,a5
  19c:	00078067          	jr	a5
  1a0:	00100793          	li	a5,1
@@ -420,19 +420,19 @@ Disassembly of section .text.vprintfmt:
  610:	b40790e3          	bnez	a5,150 <vprintfmt+0x2c>
  614:	00100793          	li	a5,1
  618:	f8f43c23          	sd	a5,-104(s0)
- 61c:	79000793          	li	a5,1936
+ 61c:	78000793          	li	a5,1920
  620:	0007a783          	lw	a5,0(a5)
  624:	0017871b          	addiw	a4,a5,1
  628:	0007069b          	sext.w	a3,a4
- 62c:	79000713          	li	a4,1936
+ 62c:	78000713          	li	a4,1920
  630:	00d72023          	sw	a3,0(a4)
- 634:	79800713          	li	a4,1944
+ 634:	78800713          	li	a4,1928
  638:	00f707b3          	add	a5,a4,a5
  63c:	00078023          	sb	zero,0(a5)
- 640:	79000793          	li	a5,1936
+ 640:	78000793          	li	a5,1920
  644:	0007a603          	lw	a2,0(a5)
  648:	f9843703          	ld	a4,-104(s0)
- 64c:	79800693          	li	a3,1944
+ 64c:	78800693          	li	a3,1928
  650:	f9043783          	ld	a5,-112(s0)
  654:	04000893          	li	a7,64
  658:	00070513          	mv	a0,a4
@@ -470,7 +470,7 @@ Disassembly of section .text.printf:
  6c8:	fd043783          	ld	a5,-48(s0)
  6cc:	fc878793          	addi	a5,a5,-56
  6d0:	fef43023          	sd	a5,-32(s0)
- 6d4:	79000793          	li	a5,1936
+ 6d4:	78000793          	li	a5,1920
  6d8:	0007a023          	sw	zero,0(a5)
  6dc:	fe043783          	ld	a5,-32(s0)
  6e0:	00078613          	mv	a2,a5
