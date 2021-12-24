@@ -28,6 +28,7 @@ void task_init() {
     idle->counter = 0;
     idle->priority = 0;
     idle->pid = 0;    
+    idle->thread.sscratch = 0;
     current = idle;
     task[0] = idle;
     // assign U-Mode Stack

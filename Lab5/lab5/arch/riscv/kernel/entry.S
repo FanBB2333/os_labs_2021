@@ -8,11 +8,11 @@ __dummy:
     
     # exchange the stack pointers
     # S-Mode -> U->Mode
-    csrrs x10, sscratch, x0 # x10 = sscratch
-    add x11, sp, x0 # x11 = sp
-    add sp, x10, x0
-    csrrw x0, sscratch, x11
-
+    
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    add t1, sp, x0 # t1 = sp
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
 
     sret
 
@@ -95,6 +95,8 @@ __switch_to:
     or t0, t0, t1
     csrrw x0, satp, t0
 
+    sfence.vma zero, zero  # flush TLB
+
     ret
 
 
@@ -105,13 +107,17 @@ _traps:
     # addi sp, sp, -8
     # sd x2,  0(sp)
     # exchange the stack pointers
-    # x-Mode -> x->Mode
+    # U-Mode -> S->Mode
+    sd t0, -8(sp)
+    sd t1, -16(sp)
     csrrs t0, sscratch, x0 # t0 = sscratch
-    beq t0, x0, _exchange_sp_sscratch_end1# if sscratch == 0, kernel-thread, end
     add t1, sp, x0 # t1 = sp
+    beqz t0, _exchange_sp_sscratch_end1# if sscratch == 0, kernel-thread, end
     add sp, t0, x0
     csrrw x0, sscratch, t1
 _exchange_sp_sscratch_end1:
+    ld t0, -8(t1)
+    ld t1, -16(t1)
 
     # TODO: test the sequence
     addi sp, sp, -264
@@ -212,25 +218,14 @@ _exchange_sp_sscratch_end1:
     addi sp, sp, 264
     addi sp, sp, 8
 
+    // S-Mode -> U-Mode
     csrrs t0, sscratch, x0 # t0 = sscratch
-    beq t0, x0, _exchange_sp_sscratch_end2# if sscratch == 0, kernel-thread, end
     add t1, sp, x0 # t1 = sp
     add sp, t0, x0
     csrrw x0, sscratch, t1
-_exchange_sp_sscratch_end2:
     # -----------
     # 4. return from trap
     sret
     # -----------
 
-_exchange_sp_sscratch:
-    // TODO: add the save procedure of t0 and t1 regs
-    # exchange the stack pointers
-    # x-Mode -> x->Mode
-    csrrs t0, sscratch, x0 # t0 = sscratch
-    beq t0, x0, _exchange_sp_sscratch_end# if sscratch == 0, kernel-thread, end
-    add t1, sp, x0 # t1 = sp
-    add sp, t0, x0
-    csrrw x0, sscratch, t1
-_exchange_sp_sscratch_end:
-    ret
+
