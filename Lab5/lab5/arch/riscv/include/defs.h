@@ -22,20 +22,17 @@
 
 #define PA2VA_OFFSET (VM_START - PHY_START)
 
-#define csr_read(csr)                       \
-({                                          \
-    register uint64 __v;                    \
-    asm volatile ("csrr " "%0, " #csr       \
-                    : : "r" (__v)                   \
-                    : "memory");                    \
-}) 
+#define csr_read(csr)                                        \
+({                                                         \
+	register uint64 __v;                                     \
+	asm volatile("csrr %0, " #csr : "=r"(__v) : : "memory"); \
+	__v;                                                     \
+})
 
-#define csr_write(csr, val)                         \
-({                                                  \
-    uint64 __v = (uint64)(val);                     \
-    asm volatile ("csrw " #csr ", %0"               \
-                    : : "r" (__v)                   \
-                    : "memory");                    \
+#define csr_write(csr, val)                                    \
+({                                                           \
+	uint64 __v = (uint64)(val);                                \
+	asm volatile("csrw " #csr ", %0" : : "r"(__v) : "memory"); \
 })
 
 
