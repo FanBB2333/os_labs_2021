@@ -57,7 +57,7 @@ void task_init() {
 
 
         // assign a U-Mode Stack
-        uint64 U_SP_VM = ((uint64)kalloc() + (uint64)PGSIZE); 
+        uint64 U_SP_VM = ((uint64)kalloc()); 
         // U-Mode sp: USER_END
         task[i]->thread.sscratch = (uint64)USER_END;
 
