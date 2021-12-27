@@ -177,6 +177,7 @@ _exchange_sp_sscratch_end1:
 
     # 3. restore sepc and 32 registers (x2(sp) should be restore last) from stack
     ld x10, 256(sp)
+    
     addi x10, x10, 4
     csrrw x0, sepc, x10 # restore sepc
     ld x10, 264(sp)
