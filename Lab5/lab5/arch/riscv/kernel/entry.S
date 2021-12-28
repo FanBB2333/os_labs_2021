@@ -8,12 +8,14 @@ __dummy:
     
     # exchange the stack pointers
     # S-Mode -> U->Mode
-    
+    sd t0, -8(sp)
+    sd t1, -16(sp)
     csrrs t0, sscratch, x0 # t0 = sscratch
     add t1, sp, x0 # t1 = sp
     add sp, t0, x0
     csrrw x0, sscratch, t1
-
+    ld t0, -8(t1)
+    ld t1, -16(t1)
     sret
 
 
@@ -112,14 +114,13 @@ _traps:
     sd t1, -16(sp)
     csrrs t0, sscratch, x0 # t0 = sscratch
     add t1, sp, x0 # t1 = sp
-    beqz t0, _exchange_sp_sscratch_end1# if sscratch == 0, kernel-thread, end
+    beqz t0, _exchange_sp_sscratch_end# if sscratch == 0, kernel-thread, end
     add sp, t0, x0
     csrrw x0, sscratch, t1
-_exchange_sp_sscratch_end1:
+_exchange_sp_sscratch_end:
     ld t0, -8(t1)
     ld t1, -16(t1)
 
-    # TODO: test the sequence
     addi sp, sp, -264
     addi sp, sp, -8
 
