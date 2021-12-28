@@ -51,6 +51,7 @@ void task_init() {
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
         // 8:SPP 5:SPIE 18:SUM
         task[i]->thread.sstatus = csr_read(sstatus);
+        task[i]->thread.sstatus &= (1L << 8) ;
         task[i]->thread.sstatus |= ((1L << 5) | (1L << 18));
         task[i]->thread.sepc = (USER_START);
 
@@ -62,18 +63,11 @@ void task_init() {
         task[i]->thread.sscratch = (uint64)USER_END;
 
         // Copy swapper_pg_dir to the user pagetable
-        // pagetable_t pgtbl = kalloc();
-        // memcpy(pgtbl, swapper_pg_dir, PGSIZE);
         task[i]->pgd = kalloc();
-        // memcpy(task[i]->pgd, swapper_pg_dir, sizeof(uint64) * 512);
         for (int j = 0; j < 512; j++){
             task[i]->pgd[j] = swapper_pg_dir[j];
         }
-        // uint64 pgtbl_ppn =((uint64)pgtbl - PA2VA_OFFSET) >> 12;
-        // uint64 new_satp = csr_read(satp);
-        // new_satp = (new_satp >> 44) << 44;
-        // new_satp |= pgtbl_ppn;
-        // task[i]->pgd = new_satp;
+
         
         //D|A|G|U|X|W|R|V|
         //7|6|5|4|3|2|1|0|
