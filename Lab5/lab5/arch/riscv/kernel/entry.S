@@ -86,7 +86,7 @@ __switch_to:
     csrrw x0, sscratch, t0
 
     # load new page table
-    ld t0, 176(x11) # t0 = PA (is a virtual address)
+    ld t0, 176(x11) # t0 = VA (is a virtual address)
     li t1, 0xffffffe000000000 - 0x80000000
     sub t0, t0, t1 # t0 = pgd - PA2VA_OFFSET, t0 = PA( physical address )
 
