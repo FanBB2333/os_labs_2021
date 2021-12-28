@@ -236,11 +236,43 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
 
 ## 4.4 添加系统调用
 
-### 添加syscall.c文件
+### 添加`syscall.c`文件
+`syscall.c`文件中用于处理内核态有关系统调用相关的函数。
+#### `syscall`函数
+`syscall`函数会在`trap_handler`中被调用，随之传入的还有所有寄存器的值与对应的系统调用ID
+```c
+uint64 syscall(struct pt_regs *regs, uint64 call_id)
+{
+    uint64 _ret;
+    switch (call_id) {
+        case SYS_WRITE:
+            // arguments: fd, buf, count
+            // arguments: a0, a1, a2
+            _ret = sys_write(regs->x[10], regs->x[11], regs->x[12]);
+            break;
+        case SYS_GETPID:
+            _ret = sys_getpid();
+            break;
 
-### 系统调用：SYS_WRITE
+        default:
+            break;
+    }
+    regs->x[10] = _ret;
+    return _ret;
+}
+```
 
-### 系统调用：SYS_GETPID
+需要注意的是，在调用完syscall，并从`trap_handler`中返回之后，需要将恢复出的sepc进行自增操作，否则会一直卡在产生异常的指令无法继续执行。这些逻辑在_traps中执行。
+```assembly
+    ld x10, 256(sp)
+    
+    addi x10, x10, 4
+    csrrw x0, sepc, x10 # restore sepc
+```
+
+#### 系统调用：SYS_WRITE
+
+#### 系统调用：SYS_GETPID
 
 
 

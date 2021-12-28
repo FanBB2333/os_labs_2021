@@ -14,27 +14,27 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
             // arguments: fd, buf, count
             // arguments: a0, a1, a2
             _ret = sys_write(regs->x[10], regs->x[11], regs->x[12]);
-            regs->x[10] = _ret;
+            // regs->x[10] = _ret;
             break;
         case SYS_GETPID:
             _ret = sys_getpid();
-            printk("getpid: %ld\n", _ret);
+            // printk("getpid: %ld\n", _ret);
             // x[10] is a0
-            regs->x[10] = _ret;
+            // regs->x[10] = _ret;
             break;
 
         default:
             break;
     }
 
-    __asm__ volatile (
-        "csrr t0, sepc\n"
-        "addi t0, t0, 4\n"
-        "csrw sepc, t0\n"
-        :
-        :
-        :"memory"
-	);
+    // __asm__ volatile (
+    //     "csrr t0, sepc\n"
+    //     "addi t0, t0, 4\n"
+    //     "csrw sepc, t0\n"
+    //     :
+    //     :
+    //     :"memory"
+	// );
     regs->x[10] = _ret;
 
     return _ret;
