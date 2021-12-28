@@ -115,7 +115,7 @@ for(int i = 1; i < NR_TASKS; i++){
     add t0, t0, t1 # t0 = PA + PA2VA_OFFSET
     sd t0, 176(x10)
 ```
-在__switch_to中也需要处理satp寄存器，根据从结构体中取到的地址，将其转换成对应的satp寄存器的值，将satp设置为新的页表的对应地址并flush快表。之后便可`ret`返回。
+在__switch_to中也需要处理satp寄存器，根据从结构体中取到的地址，将其转换成对应的satp寄存器的值，将satp设置为新的页表的对应地址并flush快表。之后便可`ret`返回。如果在此处忘记掉刷新快表数据，会导致不同线程之间的地址映射出现混乱，从而导致不可预测的错误结果。
 ```assembly
     ld t0, 152(x11)
     csrrw x0, sepc, t0
@@ -142,16 +142,96 @@ for(int i = 1; i < NR_TASKS; i++){
 
 ### 栈切换
 #### __dummy
+4.2 中我们初始化时， thread_struct.sp保存了S-Mode sp，thread_struct.sscratch保存了U-Mode sp，因此在 S-Mode 切换到 U->Mode 的时候，我们只需要交换对应的寄存器的值即可。
+切换过程如下所示，在切换时由于我们需要用到t0和t1这两个临时的寄存器，所以需要提前将它们的值存下来，并分别利用csrrs和add指令读出sscratch和sp寄存器中的值，将值交换之后重新写入到两个寄存器中，在写入完成后需要恢复t0和t1的值并调用sret以进入用户态程序。
+```assembly
+__dummy:
+    # exchange the stack pointers
+    # S-Mode -> U->Mode
+    sd t0, -8(sp)
+    sd t1, -16(sp)
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    add t1, sp, x0 # t1 = sp
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
+    ld t0, -8(t1)
+    ld t1, -16(t1)
 
+    sret
+```
 #### _trap
+_trap是进入中断之后的开始执行语句，对于ecall指令引起的中断，由于是U-Mode在切换到S-Mode过程中引发的，因此我们需要在handle其之前将sp赋为相应的S-Mode的地址，也就是说在_trap的首尾我们都需要做sp和sscratch切换的操作。
+注意如果是内核线程(没有U-Mode Stack)触发了异常，则不需要进行切换。（内核线程的sp永远指向的S-Mode Stack，sscratch为0）这一点我们在对内核线程初始化时已经赋好值了。
+下面是在_traps中的处理片段，在进入_traps之后需要先检测sscratch的值，如果为0，则不需要交换寄存器，否则需要交换sp和sscratch的值，然后进入到正常的中断处理流程。
+```assembly
+_traps:
+    # exchange the stack pointers
+    # U-Mode -> S->Mode
+    sd t0, -8(sp)
+    sd t1, -16(sp)
+    csrrs t0, sscratch, x0 # t0 = sscratch
+    add t1, sp, x0 # t1 = sp
+    beqz t0, _exchange_sp_sscratch_end# if sscratch == 0, kernel-thread, end
+    add sp, t0, x0
+    csrrw x0, sscratch, t1
+_exchange_sp_sscratch_end:
+    ld t0, -8(t1)
+    ld t1, -16(t1)
+    ......
+```
+此外，由于`trap_handler`函数的参数增加了一个`pt_regs`，我们需要在调用之前将参数放到正确的位置。由于在保存参数时，我们是按顺序将x1-x31压栈的，因此这里只需要将sp的值赋给trap_handler的第三个参数即可。
+```assembly
+    csrr x10, scause
+    csrr x11, sepc
+    add  x12, sp, x0
 
+    call trap_handler
+```
+### `struct pt_regs`的定义
+`struct pt_regs`被用于在进入中断处理程序之前将所有寄存器的值传递到处理函数中，以便函数在需要的时候方便调用。因此，需要注意结构体的变量定义顺序需要和中断处理过程中的压栈顺序相符合。
+
+```c
+struct pt_regs {
+    uint64 x[32];
+    uint64 sepc;
+    uint64 sstatus;
+};
+```
 
 ### 重新设计`trap_handler`
+在本次实验的`trap_handler`中，我们需要处理的是新引入的异常，因此需要判断最高位为0的时候的scause值。对于U-Mode中的ecall指令，`scause`值为8，此时我们需要将从`regs`中取得的寄存器的值传入`syscall`函数用于处理对应类型的系统调用。(`regs`的赋值过程已经在上一节中介绍)
 
+```c
+void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
+    // 通过 `scause` 判断trap类型
+    // 如果是interrupt 判断是否是timer interrupt
+    // 如果是timer interrupt 则打印输出相关信息, 并通过 `clock_set_next_event()` 设置下一次时钟终端
+    // `clock_set_next_event()` 见 4.5 节
+    // 其他interrupt / exception 可以直接忽略
 
-### `struct pt_regs`的定义
+    // scause 最高位1 代表是interrupt
+    int interrupt = dec2bit(scause, 64);
+    if(interrupt == 1){
+        unsigned long exception_code = scause - (1UL << 63); 
+        if(exception_code == 5){
+            clock_set_next_event();
+            do_timer();
+        }
+    }
 
+    else if(interrupt == 0){
+        unsigned long exception_code = scause ; 
+        //Environment call from U-mode
+        if (exception_code == 8) {
+            // call system call with the id saved in a7
+            // a7 is x17
+            syscall(regs, regs->x[17]);
+        }
 
+        
+    }
+}
+```
 
 
 ## 4.4 添加系统调用
