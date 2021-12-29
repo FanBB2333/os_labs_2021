@@ -297,7 +297,34 @@ uint64 sys_getpid(){
 
 ## 4.5 修改 head.S 以及 start_kernel
 
+### 修改`head.S`
+在`head.S`中，我们需要在线程初始化以及调度之前将中断关闭，也就是将sstatus.SIE的置位过程删除，具体注释的部分如下
+```assembly
+_start:
+    ...sp设置，虚拟地址开启，可分配内存初始化设置第一次时钟中断等过程...
 
+    # set sstatus[SIE] = 1
+    # comment on lab5-4.5
+    # li   x10, (1 << 1)
+    # csrw sstatus, x10
+    # ------------------
+    call task_init
+    jal x0, start_kernel
+
+```
+### 修改`start_kernel`
+在`start_kernel`，我们需要在开始进入死循环`test()`之前调用调度函数`schedule()`，以进入第一次用户态空间。
+
+```c
+int start_kernel() {
+    printk("[S-MODE] Hello RISC-V\n");
+    schedule(); // add 4.5 in Lab5
+    test(); // DO NOT DELETE !!!
+	return 0;
+}
+```
+
+## 4.6 编译及测试
 
 
 
