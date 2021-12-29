@@ -237,7 +237,7 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
 ## 4.4 添加系统调用
 
 ### 添加`syscall.c`文件
-`syscall.c`文件中用于处理内核态有关系统调用相关的函数。
+`syscall.c`文件中用于处理内核态有关系统调用相关的函数。由`syscall`函数和两个系统调用的实现组成。
 #### `syscall`函数
 `syscall`函数会在`trap_handler`中被调用，随之传入的还有所有寄存器的值与对应的系统调用ID
 ```c
@@ -271,13 +271,32 @@ uint64 syscall(struct pt_regs *regs, uint64 call_id)
 ```
 
 #### 系统调用：SYS_WRITE
+`sys_write`函数用于将`buf`中的数据写入到指定的输出流中，对于我们本次实验，fd为标准输出（1），即我们可以直接调用内核态的`printk`函数来将一个个字符按序输出到屏幕上，为了防止在buf中的某个字符是ASCII为0的结束字符，循环结束的判断条件加入了`buf[i] != 0`。最终函数将返回实际打印出的字符数。 
+
+```c
+uint64 sys_write(unsigned int fd, const char* buf, uint64 count){
+    int total_out = 0;
+    for(int i = 0; i < count && buf[i]; i++){
+        printk("%c", buf[i]);
+        total_out++;
+    }
+    return total_out;
+}
+```
+
 
 #### 系统调用：SYS_GETPID
+`sys_getpid()`函数用于获取当前线程的pid，由于我们在`syscall.c`中已经声明了当前线程的`current`指针，因此可以直接通过`current->pid`的写法获取pid。
 
-
+```c
+uint64 sys_getpid(){
+    return current->pid;
+}
+```
 
 
 ## 4.5 修改 head.S 以及 start_kernel
+
 
 
 
