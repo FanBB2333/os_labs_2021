@@ -28,14 +28,14 @@ void trap_handler(uint64_t scause, uint64_t sepc, struct pt_regs *regs) {
     }
 
     else if(interrupt == 0){
-        printk("exception: %d, sepc: %lx\n", scause, sepc);
+        // printk("exception: %d, sepc: %lx\n", scause, sepc);
         unsigned long exception_code = scause ; 
         //Environment call from U-mode
         if (exception_code == 8) {
             // printk("Environment call from U-mode\n");
             // call system call with the id saved in a7
             // a7 is x17
-            printk("system call id in trap_handler: %ld\n", regs->x[17]);
+            // printk("system call id in trap_handler: %ld\n", regs->x[17]);
             syscall(regs, regs->x[17]);
         }
 

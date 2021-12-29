@@ -46,7 +46,7 @@ void task_init() {
         task[i]->priority = rand();
         task[i]->pid = i; 
         task[i]->thread.ra = (uint64)&__dummy;
-        printk("i: %d, pri: %d, ra: %lx\n", i, task[i]->priority, task[i]->thread.ra);
+        // printk("i: %d, pri: %d, ra: %lx\n", i, task[i]->priority, task[i]->thread.ra);
 
         task[i]->thread.sp = (char *)((uint64)task[i] + (uint64)PGSIZE);
         // 8:SPP 5:SPIE 18:SUM
@@ -99,7 +99,7 @@ void dummy() {
 
 void switch_to(struct task_struct* next) {
     /* YOUR CODE HERE */
-    printk("switch from [PID = %d COUNTER = %d] to [PID = %d COUNTER = %d]\n", current->pid, current->counter, next->pid, next->counter);
+    // printk("switch from [PID = %d COUNTER = %d] to [PID = %d COUNTER = %d]\n", current->pid, current->counter, next->pid, next->counter);
     if(current->pid != next->pid) {
         struct task_struct * _tmp = current;
         current = next;
@@ -135,7 +135,7 @@ void do_timer(void) {
 int find_min_time(){
     int _min_time = -1;
     int _min_id = -1;
-    for(int i = 0; i < NR_TASKS && task[i]->counter > 0; i++){
+    for(int i = NR_TASKS - 1; i >= 0 && task[i]->counter > 0; i--){
         if(task[i]->counter < _min_time){
             _min_time = task[i]->counter;
             _min_id = i;
@@ -153,9 +153,9 @@ void schedule(void) {
     int min_index = find_min_time();
     int min_time = (min_index == -1) ? -1 : task[min_index]->counter;
 
-    printk("min_idx : %d, min_time : %d\n", min_index, min_time);
-    printk("schedule\n");
-    for(int i = 1; i < NR_TASKS; i++){
+    // printk("min_idx : %d, min_time : %d\n", min_index, min_time);
+    // printk("schedule\n");
+    for(int i = NR_TASKS - 1; i >= 0; i--){
         if(task[i]->state == TASK_RUNNING){
             if(all_zeros && task[i]->counter > 0){
                 all_zeros = 0;
@@ -167,16 +167,17 @@ void schedule(void) {
 
         }
     }
-    printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
+    // printk("all_zeros: %d, min_time: %d, min_index: %d\n", all_zeros, min_time, min_index);
     if(all_zeros){
         for(int i = 1; i < NR_TASKS; i++){
             if(task[i]->state == TASK_RUNNING){
                 // task[i]->counter = rand();
-                task[i]->counter = 5-i;
-                printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
+                task[i]->counter = 1;
+                // printk("SET [PID = %d COUNTER = %d]\n", task[i]->pid, task[i]->counter);
 
             }
         }
+        printk("\n");
         // schedule();
         min_index = find_min_time();
 
@@ -192,7 +193,7 @@ void schedule(void) {
         }
     }
     // schedule ith process
-    printk("switch_to %d\n", min_index);
+    // printk("switch_to %d\n", min_index);
     switch_to(task[min_index]);
     
 }
