@@ -6,7 +6,7 @@
 
 ## 4.1 准备工程
 在基于Lab4的代码中，我们需要给`vmlinux.lds.S`文件中加入用户态程序的存储地址，在data段中我们可以加入以下代码来加载uapp程序：
-```
+```assembly
         uapp_start = .;
         *(.uapp .uapp*)
         uapp_end = .;
