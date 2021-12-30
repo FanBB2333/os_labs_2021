@@ -326,6 +326,5 @@ int start_kernel() {
 
 ## 4.6 编译及测试
 
-
-
+在修改每个线程的执行所需时间片均为1后，我们会得到如实验指导书中给出的结果。
 ![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230002847.png)

@@ -260,18 +260,44 @@ _start:
 ```
 
 ### 4.3 编译及测试
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230081308.png)
 
 ### 4.4 思考与总结
+### 4.4.1 
+在head.S中设置第一次映射和开启虚拟地址之后，需要先将memory初始化，以便在开启三级页表中内存的分配操作。
 
+### 4.4.2
+由于在System.map符号表中存储的都是虚拟地址的标号，因此在开启虚拟地址之前，没有办法通过在符号表对应位置来设置断点，因此需要注意的是在设置虚拟内存开启之前都需要用`c`, `si`,`ni`等gdb指令来完成，直到开启虚拟地址之后才能在对应位置设置断点。
 
 
 ## 思考题
 
 - 1. 验证 .text, .rodata 段的属性是否成功设置，给出截图。
-.text段
+.text段 X|-|R|V
+我们以.text段中的`_traps`为例，
+如下图调试界面，我们可以在这一段中对代码进行`ni`操作执行，同时也表明`Valid`与`Read`位设置正常
+
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230094327.png)
+
+下图中红圈测试的是读取权限，蓝圈测试的是写入权限
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230095707.png)
+
+当加入auipc指令并尝试写入.text段中的内容时会触发中断并使程序出现问题，表现为程序卡死。
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230095857.png)
+
+.rodata段 -|-|R|V
+在.rodata段中我们放置一个nop指令，用于之后尝试跳转到此数据段并执行
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230102243.png)
+在开启虚拟地址后跳转到这个位置并尝试执行，由于在这个数据段指令无法执行
+![](https://raw.githubusercontent.com/FanBB2333/picBed/main/img/20211230102214.png)
+
+
 
 
 - 2. 为什么我们在 setup_vm 中需要做等值映射?
+因为在三级页表中我们初始化时所存储的都是物理地址，因此操作系统会在寻址时根据页表中物理地址来找对应的数据，为了避免在开启虚拟地址之后无法找到之前页表中存储地址对应内存区域的内容，因此需要做等值映射。
 
 
 - 3. 在 Linux 中，是不需要做等值映射的。请探索一下不在 setup_vm 中做等值映射的方法。
+可以使用中断进行处理，每当程序需要访问页表中访问物理地址的时候，会触发Page Fault中断，在中断中可以通过物理地址寻找到对应的虚拟地址进行处理。
+
