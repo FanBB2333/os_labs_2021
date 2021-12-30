@@ -124,6 +124,11 @@ relocate:
 
 
 ### 4.2.2 setup_vm_final 的实现
+在`setup_vm_final`中，我们需要设置最终的三级页表的映射关系，在映射时，需要对每一个不同权限是数据段单独做映射，权限的设置部分由perm来移位运算决定，对于每个数据段，都可以通过符号表从链接文件中取出数据段的启示和结尾地址。需要注意的是，由于在符号表中存储的是虚拟地址，在传入`create_mapping`函数时需要将其转化成对应的物理地址。
+
+此外，对于内核地址之后的地址段映射，需要利用`PGROUNDUP`函数做到4K对齐，也就是说在`_ebss`后没有存内容的的某一小段地址没有被映射到虚拟地址，如果不做到4K兑取，则会在访问时出现错误。
+
+在地址映射开启后，便可以对satp寄存器进行赋值，并利用汇编语句将算出的satp值写入到csr寄存器中，之后进行刷新快表的操作。
 
 ```c
 void setup_vm_final(void) {
@@ -166,6 +171,11 @@ void setup_vm_final(void) {
 ```
 
 ### 4.2.3 create_mapping 的实现
+`create_mapping`函数用于创建多级页表的映射关系，根据输入的内存大小，需要先计算出所需页的个数，对于每一个需要被映射的页，都应当完成一遍三级页表映射的流程，在流程中，需要根据每一级取出的PPN来寻找下一级页表，如果已经存在，则直接获得地址并进入到下一级页表，如果页表不存在，则利用kalloc函数分配一个新的页，将其转化成pte项目的要求并写入到当前级的页表，之后便可同样进入下一级页表。
+
+需要注意的是，在pte中所存储的是PPN，即物理地址，因此在kalloc之后需要先将其转化成物理地址。
+
+`page_exist`会根据pte的最低位`Valid`位来判断页表是否合法。
 
 ```c
 int page_exist(uint64 pte){
@@ -188,15 +198,12 @@ void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm) {
 
     int page_num = sz / PGSIZE;
     page_num = (sz % PGSIZE != 0) ? (page_num + 1) : page_num;
-    // printk("ready to allocate page: %d\n", page_num);
     
     uint64 *pgd = pgtbl;
     uint64 *pmd = NULL;
     uint64 *pte = NULL;
 
     for(int i = 0; i < page_num; i++){
-        // printk("pte: %x, getvpn(va, 2,1,0): %d  %d  %d\n", pte, getvpn(va, 2), getvpn(va, 1), getvpn(va, 0));
-
         // layer 2
         // if 1st entry doesn't exist, create a new one
         if( !page_exist(pgtbl[getvpn(va, 2)]) ){
